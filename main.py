@@ -4,6 +4,20 @@ from src.utils import *
 from torch.utils.data import DataLoader
 from src import train
 
+os.system('set PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:512')
+
+print(torch.cuda.device_count())
+device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:512"
+PYTORCH_CUDA_ALLOC_CONF="max_split_size_mb:512"
+
+if not torch.cuda.is_available():
+    print("ERROR: no available GPU.")
+else:
+    print("CUDA: OK")
+
+torch.cuda.empty_cache()
 
 parser = argparse.ArgumentParser(description='MOSEI Sentiment Analysis')
 parser.add_argument('-f', default='', type=str)
@@ -51,7 +65,7 @@ parser.add_argument('--attn_mask', action='store_false',
                     help='use attention mask for Transformer (default: true)')
 
 # Tuning
-parser.add_argument('--batch_size', type=int, default=24, metavar='N',
+parser.add_argument('--batch_size', type=int, default=4, metavar='N',
                     help='batch size (default: 24)')
 parser.add_argument('--clip', type=float, default=0.8,
                     help='gradient clip value (default: 0.8)')
@@ -87,6 +101,7 @@ elif valid_partial_mode != 1:
     raise ValueError("You can only choose one of {l/v/a}only.")
 
 use_cuda = False
+# use_cuda = True
 
 output_dim_dict = {
     'mosi': 1,
@@ -118,10 +133,11 @@ print("Start loading the data....")
 train_data = get_data(args, dataset, 'train')
 valid_data = get_data(args, dataset, 'valid')
 test_data = get_data(args, dataset, 'test')
-   
-train_loader = DataLoader(train_data, batch_size=args.batch_size, shuffle=True)
-valid_loader = DataLoader(valid_data, batch_size=args.batch_size, shuffle=True)
-test_loader = DataLoader(test_data, batch_size=args.batch_size, shuffle=True)
+
+DEF_DEVICE = 'cuda' if use_cuda else 'cpu'
+train_loader = DataLoader(train_data, batch_size=args.batch_size, shuffle=True, generator=torch.Generator(device=DEF_DEVICE))
+valid_loader = DataLoader(valid_data, batch_size=args.batch_size, shuffle=True, generator=torch.Generator(device=DEF_DEVICE))
+test_loader = DataLoader(test_data, batch_size=args.batch_size, shuffle=True, generator=torch.Generator(device=DEF_DEVICE))
 
 print('Finish loading the data....')
 if not args.aligned:
@@ -148,5 +164,6 @@ hyp_params.criterion = criterion_dict.get(dataset, 'L1Loss')
 
 
 if __name__ == '__main__':
+    # print(torch.cuda.memory_summary())
     test_loss = train.initiate(hyp_params, train_loader, valid_loader, test_loader)
 
