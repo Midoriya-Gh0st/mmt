@@ -1,0 +1,17 @@
+program: main.py
+method: bayes
+metric:
+  name: metric_combined
+  goal: minimize
+parameters:
+  lr:
+    min: 0.0001
+    max: 0.01
+  num_epochs:
+    values: [160, 130, 100]
+  optim:
+    values: ["Adam", "SGD"]
+  nlevels:
+    values: [6, 5, 4]
+  num_heads:
+    values: [8, 10]

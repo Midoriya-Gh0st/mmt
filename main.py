@@ -1,16 +1,22 @@
-import torch
+import os
+
+import wandb
+
+wandb.init(project="test-project", entity="ytwang-dst")
+
+os.environ['OPENBLAS_NUM_THREADS'] = '1'
+os.environ["WANDB_DIR"] = os.path.abspath("./logs")
+
 import argparse
 from src.utils import *
 from torch.utils.data import DataLoader
 from src import train
 
-os.system('set PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:512')
-
 print(torch.cuda.device_count())
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:512"
-PYTORCH_CUDA_ALLOC_CONF="max_split_size_mb:512"
+PYTORCH_CUDA_ALLOC_CONF = "max_split_size_mb:512"
 
 if not torch.cuda.is_available():
     print("ERROR: no available GPU.")
@@ -35,37 +41,37 @@ parser.add_argument('--lonly', action='store_true',
                     help='use the crossmodal fusion into l (default: False)')
 parser.add_argument('--aligned', action='store_true',
                     help='consider aligned experiment or not (default: False)')
-parser.add_argument('--dataset', type=str, default='mosei_senti',
+parser.add_argument('--dataset', type=str, default='mosi',  # mosei_senti
                     help='dataset to use (default: mosei_senti)')
 parser.add_argument('--data_path', type=str, default='data',
                     help='path for storing the dataset')
 
 # Dropouts
-parser.add_argument('--attn_dropout', type=float, default=0.1,
+parser.add_argument('--attn_dropout', type=float, default=0.2,  # 0.1
                     help='attention dropout')
-parser.add_argument('--attn_dropout_a', type=float, default=0.0,
+parser.add_argument('--attn_dropout_a', type=float, default=0.2,  # 0.0
                     help='attention dropout (for audio)')
-parser.add_argument('--attn_dropout_v', type=float, default=0.0,
+parser.add_argument('--attn_dropout_v', type=float, default=0.2,  # 0.0
                     help='attention dropout (for visual)')
 parser.add_argument('--relu_dropout', type=float, default=0.1,
                     help='relu dropout')
-parser.add_argument('--embed_dropout', type=float, default=0.25,
+parser.add_argument('--embed_dropout', type=float, default=0.2,  # 0.25
                     help='embedding dropout')
 parser.add_argument('--res_dropout', type=float, default=0.1,
                     help='residual block dropout')
-parser.add_argument('--out_dropout', type=float, default=0.0,
+parser.add_argument('--out_dropout', type=float, default=0.1,  # 0.0
                     help='output layer dropout')
 
 # Architecture
-parser.add_argument('--nlevels', type=int, default=5,
+parser.add_argument('--nlevels', type=int, default=4,
                     help='number of layers in the network (default: 5)')
-parser.add_argument('--num_heads', type=int, default=5,
+parser.add_argument('--num_heads', type=int, default=10,  # 注意要被dim=30可整除
                     help='number of heads for the transformer network (default: 5)')
 parser.add_argument('--attn_mask', action='store_false',
                     help='use attention mask for Transformer (default: true)')
 
 # Tuning
-parser.add_argument('--batch_size', type=int, default=4, metavar='N',
+parser.add_argument('--batch_size', type=int, default=2, metavar='N',  # 4
                     help='batch size (default: 24)')
 parser.add_argument('--clip', type=float, default=0.8,
                     help='gradient clip value (default: 0.8)')
@@ -73,7 +79,7 @@ parser.add_argument('--lr', type=float, default=1e-3,
                     help='initial learning rate (default: 1e-3)')
 parser.add_argument('--optim', type=str, default='Adam',
                     help='optimizer to use (default: Adam)')
-parser.add_argument('--num_epochs', type=int, default=40,
+parser.add_argument('--num_epochs', type=int, default=20,
                     help='number of epochs (default: 40)')
 parser.add_argument('--when', type=int, default=20,
                     help='when to decay learning rate (default: 20)')
@@ -133,6 +139,7 @@ print("Start loading the data....")
 train_data = get_data(args, dataset, 'train')
 valid_data = get_data(args, dataset, 'valid')
 test_data = get_data(args, dataset, 'test')
+print(type(train_data))
 
 DEF_DEVICE = 'cuda' if use_cuda else 'cpu'
 train_loader = DataLoader(train_data, batch_size=args.batch_size, shuffle=True, generator=torch.Generator(device=DEF_DEVICE))
@@ -143,6 +150,16 @@ print('Finish loading the data....')
 if not args.aligned:
     print("### Note: You are running in unaligned mode.")
 
+#
+# print("test-data-check:")
+# print("type:", test_data.meta.shape)    # (4659, 3) [id, start, end]
+# print("id:", test_data.meta[917])       # id: ['245582' '11.326' '16.207']
+# print("id:", test_data.meta[903])       # id: ['24504' '32.857' '41.18']
+# print("id:", test_data.meta[1214])      # id: ['29751' '7.115' '14.381']
+# print("id:", test_data.meta[892])       # id: ['243981' '32.208' '39.185']
+# print("id:", test_data.meta[3843])      # id: ['lYwgLa4R5XQ' '31.7192743764' '36.5006802721']
+# print("id:", test_data.meta[4488])      # id: ['xobMRm5Vs44' '21.672' '26.813']
+#
 ####################################################################
 #
 # Hyperparameters
@@ -162,8 +179,30 @@ hyp_params.model = str.upper(args.model.strip())
 hyp_params.output_dim = output_dim_dict.get(dataset, 1)
 hyp_params.criterion = criterion_dict.get(dataset, 'L1Loss')
 
+print("n_train:", hyp_params.n_train)
 
 if __name__ == '__main__':
     # print(torch.cuda.memory_summary())
-    test_loss = train.initiate(hyp_params, train_loader, valid_loader, test_loader)
+    torch.autograd.set_detect_anomaly(True)
 
+    hypar_defaults = dict(
+
+        lr=hyp_params.lr,  #
+        optim=hyp_params.optim,  #
+        num_epochs=hyp_params.num_epochs,  #
+
+        nlevels=hyp_params.nlevels,  #
+        num_heads=hyp_params.num_heads,  #
+        batch_size=hyp_params.batch_size,  #
+
+        clip=hyp_params.clip,  #
+        attn_dropout=hyp_params.attn_dropout,  #
+        out_dropout=hyp_params.out_dropout,  #
+        embed_dropout=hyp_params.embed_dropout,  #
+    )
+
+    wandb.init(config=hypar_defaults)
+    wandb.config = hypar_defaults
+    print("dict:", wandb.config)
+
+    test_loss = train.initiate(hyp_params, train_loader, valid_loader, test_loader)

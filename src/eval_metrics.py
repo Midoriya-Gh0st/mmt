@@ -1,5 +1,6 @@
 import torch
 import numpy as np
+import wandb
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import precision_recall_fscore_support
@@ -52,7 +53,14 @@ def eval_mosei_senti(results, truths, exclude_zero=False):
     print("mult_acc_7: ", mult_a7)
     print("mult_acc_5: ", mult_a5)
     print("F1 score: ", f_score)
-    print("Accuracy: ", accuracy_score(binary_truth, binary_preds))
+
+    acc = accuracy_score(binary_truth, binary_preds)
+    print("Accuracy: ", acc)
+
+    wandb.log({
+        'MAE': mae,
+        'f_score': f_score,
+        'acc': acc})
 
     print("-" * 50)
 

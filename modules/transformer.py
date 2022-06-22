@@ -1,9 +1,13 @@
+import numpy as np
 import torch
 from torch import nn
+import numpy.ma as ma
 import torch.nn.functional as F
 from modules.position_embedding import SinusoidalPositionalEmbedding
 from modules.multihead_attention import MultiheadAttention
+# from torch.nn import MultiheadAttention
 import math
+import pickle
 
 
 class TransformerEncoder(nn.Module):
@@ -46,7 +50,7 @@ class TransformerEncoder(nn.Module):
         if self.normalize:
             self.layer_norm = LayerNorm(embed_dim)
 
-    def forward(self, x_in, x_in_k = None, x_in_v = None):
+    def forward(self, x_in, x_in_k=None, x_in_v=None, attn_mask=None):
         """
         Args:
             x_in (FloatTensor): embedded input of shape `(src_len, batch, embed_dim)`
@@ -74,14 +78,18 @@ class TransformerEncoder(nn.Module):
                 x_v += self.embed_positions(x_in_v.transpose(0, 1)[:, :, 0]).transpose(0, 1)   # Add positional embedding
             x_k = F.dropout(x_k, p=self.dropout, training=self.training)
             x_v = F.dropout(x_v, p=self.dropout, training=self.training)
-        
+
         # encoder layers
+        i_idx = 0
         intermediates = [x]
         for layer in self.layers:
+            i_idx += 1
+            # input(f"[tf.py] layers: {i_idx}")
+            # print(x.shape)
             if x_in_k is not None and x_in_v is not None:
-                x = layer(x, x_k, x_v)
+                x = layer(x, x_k, x_v, attn_mask=attn_mask)
             else:
-                x = layer(x)
+                x = layer(x, attn_mask=attn_mask)
             intermediates.append(x)
 
         if self.normalize:
@@ -118,9 +126,11 @@ class TransformerEncoderLayer(nn.Module):
         self.self_attn = MultiheadAttention(
             embed_dim=self.embed_dim,
             num_heads=self.num_heads,
-            attn_dropout=attn_dropout
+            attn_dropout=attn_dropout,
+            # dropout=attn_dropout,
         )
         self.attn_mask = attn_mask
+        self.key_padding_mask = None
 
         self.relu_dropout = relu_dropout
         self.res_dropout = res_dropout
@@ -130,7 +140,7 @@ class TransformerEncoderLayer(nn.Module):
         self.fc2 = Linear(4*self.embed_dim, self.embed_dim)
         self.layer_norms = nn.ModuleList([LayerNorm(self.embed_dim) for _ in range(2)])
 
-    def forward(self, x, x_k=None, x_v=None):
+    def forward(self, x, x_k=None, x_v=None, attn_mask=None):
         """
         Args:
             x (Tensor): input to the layer of shape `(seq_len, batch, embed_dim)`
@@ -141,15 +151,24 @@ class TransformerEncoderLayer(nn.Module):
         Returns:
             encoded output of shape `(batch, src_len, embed_dim)`
         """
+
+        # input("check x in trans, done.")  # 这里可以获取有效值.
+        # 创建一个 [len, b_s] 的 kp-mask.
+        # 或者 [batch], 其中value为len.
+
         residual = x
         x = self.maybe_layer_norm(0, x, before=True)
-        mask = buffered_future_mask(x, x_k) if self.attn_mask else None
+
+        # mask = buffered_future_mask(x, x_k) if self.attn_mask else None
+
         if x_k is None and x_v is None:
-            x, _ = self.self_attn(query=x, key=x, value=x, attn_mask=mask)
+            x, _ = self.self_attn(query=x, key=x, value=x, attn_mask=attn_mask)
         else:
+            # print("x_k is Not None")
             x_k = self.maybe_layer_norm(0, x_k, before=True)
-            x_v = self.maybe_layer_norm(0, x_v, before=True) 
-            x, _ = self.self_attn(query=x, key=x_k, value=x_v, attn_mask=mask)
+            x_v = self.maybe_layer_norm(0, x_v, before=True)
+            x, _ = self.self_attn(query=x, key=x_k, value=x_v, attn_mask=attn_mask)
+
         x = F.dropout(x, p=self.res_dropout, training=self.training)
         x = residual + x
         x = self.maybe_layer_norm(0, x, after=True)
@@ -200,6 +219,7 @@ def LayerNorm(embedding_dim):
 
 
 if __name__ == '__main__':
-    encoder = TransformerEncoder(300, 4, 2)
+    encoder = TransformerEncoder(300, 4, 5)
     x = torch.tensor(torch.rand(20, 2, 300))
     print(encoder(x).shape)
+
