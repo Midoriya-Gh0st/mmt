@@ -71,7 +71,7 @@ parser.add_argument('--attn_mask', action='store_false',
                     help='use attention mask for Transformer (default: true)')
 
 # Tuning
-parser.add_argument('--batch_size', type=int, default=2, metavar='N',  # 4
+parser.add_argument('--batch_size', type=int, default=4, metavar='N',  # 4
                     help='batch size (default: 24)')
 parser.add_argument('--clip', type=float, default=0.8,
                     help='gradient clip value (default: 0.8)')
@@ -152,6 +152,7 @@ if not args.aligned:
 
 #
 # print("test-data-check:")
+# print(test_data.meta[:4])
 # print("type:", test_data.meta.shape)    # (4659, 3) [id, start, end]
 # print("id:", test_data.meta[917])       # id: ['245582' '11.326' '16.207']
 # print("id:", test_data.meta[903])       # id: ['24504' '32.857' '41.18']

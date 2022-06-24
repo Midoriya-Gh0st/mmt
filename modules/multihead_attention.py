@@ -19,6 +19,14 @@ def cur_show(ws, title="null"):
     plt.show()
 
 
+def get_val_lens(p_x):
+    """ compute the real seq_len. """
+    # p_x = p_x.transpose(0, 1)  # [b_s, len, dim]
+    kp_mask = (p_x != 0).float()  # create mask tensor
+    real_lens = kp_mask.count_nonzero(dim=2).count_nonzero(dim=1)
+    return real_lens
+
+
 class MultiheadAttention(nn.Module):
     """Multi-headed attention.
     See "Attention Is All You Need" for more details.
@@ -124,9 +132,28 @@ class MultiheadAttention(nn.Module):
 
         """ attn_weights compute. """
         attn_weights = torch.bmm(q, k.transpose(1, 2))
+        # print("size:", attn_weights.size())  # torch.Size([40, 50, 375])
 
         assert list(attn_weights.size()) == [bsz * self.num_heads, tgt_len, src_len]
 
+        # ---
+        # 检查 mask 是否 正确.
+        def check_mask(my_mask):
+            mask_l_a = my_mask
+            print("shape:", mask_l_a.shape)
+            print(mask_l_a[0])
+            print("A:", get_val_lens(mask_l_a))
+            print("B", get_val_lens(mask_l_a.transpose(1, 2)))
+            cur_show(mask_l_a[0])
+            cur_show(mask_l_a[4])
+            cur_show(mask_l_a[5])
+            cur_show(mask_l_a[10])
+            cur_show(mask_l_a[15])
+            cur_show(mask_l_a[20])
+            cur_show(mask_l_a[25])
+
+        # check_mask(attn_mask)
+        # ---
         def apply_mask(w, mask, zero_mask=False):
             """ process seq. len. problem. """
             if mask is not None:
@@ -134,13 +161,23 @@ class MultiheadAttention(nn.Module):
                     # print("attn_mask.shape:", attn_mask.shape)
                     # w = w * mask.repeat(self.num_heads, 1, 1).squeeze()  # 不能使用 "*=".
                     mask = mask.logical_not()  # 取not, 使mask中为True的位置表示需要被mask;
-                    mask = mask.logical_not().repeat(self.num_heads, 1, 1).squeeze()  # 散开heads
+                    # check_mask(mask)  # mask: ok
+                    # print("repeat-0", mask.shape)
+
+                    mask = mask.logical_not().repeat_interleave(self.num_heads, dim=0).squeeze()  # 散开heads
+                    # print("repeat-1", mask.shape)
+                    # 之前(repeat): # repeat之后, 是一轮再一轮, 不是把相同的放在一起;
+                    # 现在: """ 要把相同sample的heads放在一起 """
+                    # check_mask(mask)
+                    # check_mask(w)
 
                     if zero_mask:
                         w = w.masked_fill(mask.logical_not(), 0)
                     else:
                         # w[mask == 0] = -1e9
                         w = w.masked_fill(mask.logical_not(), -1e9)
+
+                    # check_mask(w)
 
                     return w  # attn_weights
                 except:
@@ -150,6 +187,8 @@ class MultiheadAttention(nn.Module):
             else:
                 # print("[MHA]apply: mask is none.")
                 return w
+
+        # check_mask(attn_weights)
 
         # mask-1, 因为之后使用softmax.
         # mask with -inf (-1e9).
@@ -193,6 +232,23 @@ class MultiheadAttention(nn.Module):
 
         # average attention weights over heads
         attn_weights = attn_weights.reshape(bsz, self.num_heads, tgt_len, src_len)
+
+        # --- 保存
+        # import pickle
+        # def pkl_encoder(var, file_name):
+        #     # pickle a variable to a file
+        #     file = open(file_name, 'wb')
+        #     pickle.dump(var, file)
+        #     file.close()
+        #     print("save ok!")
+        # x = input("保存Layer-3:?")
+        # if x == "ok":
+        #     pkl_encoder(attn_weights, "mosi-attn-w-l3-bs4.pkl")
+        #
+        # t1 = get_val_lens(attn_weights[:, 0, :, :])
+        # t2 = get_val_lens(attn_weights.transpose(-1, -2)[:, 0, :, :])
+        # print("check len:", t1, t2)
+        # ---
 
         attn_weights = attn_weights.sum(dim=1) / self.num_heads
         # input(f"The weight:{attn_weights.shape}")  # torch.Size([35, 50, 375])

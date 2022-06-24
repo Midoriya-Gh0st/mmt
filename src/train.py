@@ -27,7 +27,7 @@ from sklearn.metrics import precision_recall_fscore_support
 from sklearn.metrics import accuracy_score, f1_score
 from src.eval_metrics import *
 
-ON_TEST = 0
+ON_TEST = 1
 
 
 ####################################################################
@@ -349,4 +349,5 @@ def train_model(settings, hyp_params, train_loader, valid_loader, test_loader):
         eval_iemocap(results, truths)
 
     sys.stdout.flush()
-    input('[Press Any Key to start another run]')
+    # input('[Press Any Key to start another run]')
+    print("[done].")

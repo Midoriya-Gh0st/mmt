@@ -214,6 +214,9 @@ class MULTModel(nn.Module):
         # print(get_val_lens(mask_l_a))
         # print(get_val_lens(mask_l_a.transpose(1, 2)))
         # cur_show(mask_l_a[0])
+        # cur_show(mask_l_a[1])
+        # cur_show(mask_l_a[2])
+        # cur_show(mask_l_a[3])
 
         # input("check")
         mask_l_v = generate_mask(proj_x_l, proj_x_v, flag=1)
