@@ -63,7 +63,7 @@ parser.add_argument('--out_dropout', type=float, default=0.1,  # 0.0
                     help='output layer dropout')
 
 # Architecture
-parser.add_argument('--nlevels', type=int, default=4,
+parser.add_argument('--nlevels', type=int, default=5,
                     help='number of layers in the network (default: 5)')
 parser.add_argument('--num_heads', type=int, default=10,  # 注意要被dim=30可整除
                     help='number of heads for the transformer network (default: 5)')
@@ -71,7 +71,7 @@ parser.add_argument('--attn_mask', action='store_false',
                     help='use attention mask for Transformer (default: true)')
 
 # Tuning
-parser.add_argument('--batch_size', type=int, default=4, metavar='N',  # 4
+parser.add_argument('--batch_size', type=int, default=64, metavar='N',  # 4
                     help='batch size (default: 24)')
 parser.add_argument('--clip', type=float, default=0.8,
                     help='gradient clip value (default: 0.8)')

@@ -1,12 +1,3 @@
-import argparse
-import wandb
-
-# wandb.config = {
-#   "learning_rate": 0.001,
-#   "epochs": 100,
-#   "batch_size": 128
-# }
-
 import torch
 from torch import nn
 import sys
@@ -19,7 +10,6 @@ import time
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 import os
 import pickle
-import matplotlib.pyplot as plt
 
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
@@ -36,6 +26,7 @@ ON_TEST = 1
 #
 ####################################################################
 
+
 def get_CTC_module(hyp_params):
     a2l_module = getattr(ctc, 'CTCModule')(in_dim=hyp_params.orig_d_a, out_seq_len=hyp_params.l_len)
     v2l_module = getattr(ctc, 'CTCModule')(in_dim=hyp_params.orig_d_v, out_seq_len=hyp_params.l_len)
@@ -43,22 +34,13 @@ def get_CTC_module(hyp_params):
 
 
 def initiate(hyp_params, train_loader, valid_loader, test_loader):
-    # 设置调参
-
-    # input("check params:")
-    # print("1", hyp_params.optim)
-    # print("2", wandb.config)
-    # input()
-
     model = getattr(models, hyp_params.model + 'Model')(hyp_params)
 
     if hyp_params.use_cuda:
         model = model.cuda()
 
-    optimizer = getattr(optim, wandb.config['optim'])(model.parameters(), lr=wandb.config['lr'])
-    # optimizer = getattr(optim, hyp_params.optim)(model.parameters(), lr=hyp_params.lr)
+    optimizer = getattr(optim, hyp_params.optim)(model.parameters(), lr=hyp_params.lr)
     criterion = getattr(nn, hyp_params.criterion)()
-
     if hyp_params.aligned or hyp_params.model == 'MULT':
         ctc_criterion = None
         ctc_a2l_module, ctc_v2l_module = None, None
@@ -107,21 +89,10 @@ def train_model(settings, hyp_params, train_loader, valid_loader, test_loader):
     def train(model, optimizer, criterion, ctc_a2l_module, ctc_v2l_module, ctc_a2l_optimizer, ctc_v2l_optimizer, ctc_criterion):
         epoch_loss = 0
         model.train()
-
-        # x_sum = sum(1 for _ in enumerate(train_loader))
-        # print("num of batch:", x_sum)
-        # my_num = x_sum // 10
-
-        num_batches = hyp_params.n_train // hyp_params.batch_size  # 原
-        num_batches = hyp_params.n_train // wandb.config['batch_size']  # 调参
-        # print("num_bs:", num_batches, len(train_loader))  # = = 64
-
+        num_batches = hyp_params.n_train // hyp_params.batch_size
         proc_loss, proc_size = 0, 0
         start_time = time.time()
-
         for i_batch, (batch_X, batch_Y, batch_META) in enumerate(train_loader):
-            # print(f"Batch {i_batch}")
-
             sample_ind, text, audio, vision = batch_X
             eval_attr = batch_Y.squeeze(-1)  # if num of labels is 1
 
@@ -202,8 +173,7 @@ def train_model(settings, hyp_params, train_loader, valid_loader, test_loader):
                 ctc_a2l_optimizer.step()
                 ctc_v2l_optimizer.step()
 
-            # torch.nn.utils.clip_grad_norm_(model.parameters(), hyp_params.clip)
-            torch.nn.utils.clip_grad_norm_(model.parameters(), wandb.config['clip'])
+            torch.nn.utils.clip_grad_norm_(model.parameters(), hyp_params.clip)
             optimizer.step()
 
             proc_loss += raw_loss.item() * batch_size
@@ -214,7 +184,6 @@ def train_model(settings, hyp_params, train_loader, valid_loader, test_loader):
                 elapsed_time = time.time() - start_time
                 print('Epoch {:2d} | Batch {:3d}/{:3d} | Time/Batch(ms) {:5.2f} | Train Loss {:5.4f}'.
                       format(epoch, i_batch, num_batches, elapsed_time * 1000 / hyp_params.log_interval, avg_loss))
-
                 proc_loss, proc_size = 0, 0
                 start_time = time.time()
 
@@ -227,39 +196,6 @@ def train_model(settings, hyp_params, train_loader, valid_loader, test_loader):
 
         results = []
         truths = []
-
-        # """ 用于检查 data len """
-        # with torch.no_grad():
-        #     print(len(loader))  # = 4659, 即在test_set;
-        #     for i_batch, (batch_X, batch_Y, batch_META) in enumerate(loader):
-        #         input(f"[Test]: batch {i_batch}")
-        #
-        #         sample_ind, text, audio, vision = batch_X
-        #         eval_attr = batch_Y.squeeze(dim=-1)  # if num of labels is 1
-        #
-        #         # input(f"ready check data:{type(sample_ind), type(text)}")
-        #         print(sample_ind)
-        #         xx_text = text[0]
-        #         xx_audio = audio[0]
-        #         xx_vision = vision[0]
-        #
-        #         def get_val_len(xx):
-        #             val_len = 0
-        #             for ii in range(len(xx)):
-        #                 # print(f"sum-of-row:", )
-        #                 sum_of_raw = xx[ii].sum().item()
-        #                 if sum_of_raw != 0:
-        #                     val_len += 1
-        #                 # print(f"{ii}\t", np.sum(text[ii]))
-        #             return val_len
-        #
-        #         len_text = get_val_len(xx_text)
-        #         len_audio = get_val_len(xx_audio)
-        #         len_vision = get_val_len(xx_vision)
-        #
-        #         print("len_text:", len_text)
-        #         print("len_audio:", len_audio)
-        #         print("len_vision:", len_vision)
 
         with torch.no_grad():
             for i_batch, (batch_X, batch_Y, batch_META) in enumerate(loader):
@@ -282,7 +218,6 @@ def train_model(settings, hyp_params, train_loader, valid_loader, test_loader):
 
                 net = nn.DataParallel(model) if batch_size > 10 else model
                 preds, _ = net(text, audio, vision)
-
                 if hyp_params.dataset == 'iemocap':
                     preds = preds.view(-1, 2)
                     eval_attr = eval_attr.view(-1)
@@ -298,20 +233,11 @@ def train_model(settings, hyp_params, train_loader, valid_loader, test_loader):
         truths = torch.cat(truths)
         return avg_loss, results, truths
 
-    best_valid = 1e8
-
-    # 运用 train/test
     if not ON_TEST:
-        # input("On_Train")
-
-        # for epoch in range(1, hyp_params.num_epochs+1):
-        for epoch in range(1, wandb.config['num_epochs']):
-            # print(f"Epoch: {epoch}")
-
+        best_valid = 1e8
+        for epoch in range(1, hyp_params.num_epochs + 1):
             start = time.time()
-
-            # 仅做测试, 暂时隐藏下面两条.
-            epoch_train_loss = train(model, optimizer, criterion, ctc_a2l_module, ctc_v2l_module, ctc_a2l_optimizer, ctc_v2l_optimizer, ctc_criterion)
+            train(model, optimizer, criterion, ctc_a2l_module, ctc_v2l_module, ctc_a2l_optimizer, ctc_v2l_optimizer, ctc_criterion)
             val_loss, _, _ = evaluate(model, ctc_a2l_module, ctc_v2l_module, criterion, test=False)
             test_loss, _, _ = evaluate(model, ctc_a2l_module, ctc_v2l_module, criterion, test=True)
 
@@ -327,16 +253,8 @@ def train_model(settings, hyp_params, train_loader, valid_loader, test_loader):
                 print(f"Saved model at pre_trained_models/{hyp_params.name}.pt!")
                 save_model(hyp_params, model, name=hyp_params.name)
                 best_valid = val_loss
-
-            metric_combined = 0.2 * epoch_train_loss + 0.3 * val_loss + 0.3 * test_loss
-
-            wandb.log({
-                'val_loss': val_loss,
-                'test_loss': test_loss,
-                'epoch_train_loss': epoch_train_loss,   # 一个epoch有多次, 这是取均值;
-                'metric_combined': metric_combined})
     else:
-        print("On Test")
+        print("ON Test.")
 
     model = load_model(hyp_params, name=hyp_params.name)
     _, results, truths = evaluate(model, ctc_a2l_module, ctc_v2l_module, criterion, test=True)
@@ -349,5 +267,4 @@ def train_model(settings, hyp_params, train_loader, valid_loader, test_loader):
         eval_iemocap(results, truths)
 
     sys.stdout.flush()
-    # input('[Press Any Key to start another run]')
-    print("[done].")
+    input('[Press Any Key to start another run]')

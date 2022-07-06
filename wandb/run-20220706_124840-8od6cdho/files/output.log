@@ -1,0 +1,26 @@
+
+wandb: WARNING Changes to your `wandb` environment variables will be ignored because your `wandb` session has already started. For more information on how to modify your settings with `wandb.init()` arguments, please refer to https://wandb.me/wandb-init.
+1
+CUDA: OK
+Start loading the data....
+  - Found cached train data
+  - Found cached valid data
+  - Found cached test data
+<class 'src.dataset.Multimodal_Datasets'>
+Finish loading the data....
+### Note: You are running in unaligned mode.
+n_train: 1284
+dict: {'lr': 0.001, 'optim': 'Adam', 'num_epochs': 20, 'nlevels': 5, 'num_heads': 10, 'batch_size': 64, 'clip': 0.8, 'attn_dropout': 0.2, 'out_dropout': 0.1, 'embed_dropout': 0.2}
+On Test
+D:\mmt\modules\position_embedding.py:21: UserWarning: The number of elements in the out tensor of shape [50] is 50 which does not match the computed number of elements 375. Note that this may occur as a result of rounding error. The out tensor will be resized to a tensor of shape (375,). (Triggered internally at  C:\actions-runner\_work\pytorch\pytorch\builder\windows\pytorch\aten\src\ATen\native\cuda\RangeFactories.cu:251.)
+  torch.arange(padding_idx + 1, max_pos, out=getattr(make_positions, buf_name))
+D:\mmt\modules\position_embedding.py:21: UserWarning: The number of elements in the out tensor of shape [375] is 375 which does not match the computed number of elements 500. Note that this may occur as a result of rounding error. The out tensor will be resized to a tensor of shape (500,). (Triggered internally at  C:\actions-runner\_work\pytorch\pytorch\builder\windows\pytorch\aten\src\ATen\native\cuda\RangeFactories.cu:251.)
+  torch.arange(padding_idx + 1, max_pos, out=getattr(make_positions, buf_name))
+MAE:  1.0062014
+Correlation Coefficient:  0.6535616245024799
+mult_acc_7:  0.3498542274052478
+mult_acc_5:  0.39941690962099125
+F1 score:  0.7715569610904884
+Accuracy:  0.7728658536585366
+--------------------------------------------------
+[done].

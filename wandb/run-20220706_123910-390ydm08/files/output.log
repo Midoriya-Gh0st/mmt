@@ -1,0 +1,29 @@
+1
+CUDA: OK
+Start loading the data....
+  - Found cached train data
+  - Found cached valid data
+  - Found cached test data
+<class 'src.dataset.Multimodal_Datasets'>
+Finish loading the data....
+### Note: You are running in unaligned mode.
+n_train: 1284
+dict: {'lr': 0.001, 'optim': 'Adam', 'num_epochs': 20, 'nlevels': 5, 'num_heads': 10, 'batch_size': 4, 'clip': 0.8, 'attn_dropout': 0.2, 'out_dropout': 0.1, 'embed_dropout': 0.2}
+On Test
+wandb: WARNING Changes to your `wandb` environment variables will be ignored because your `wandb` session has already started. For more information on how to modify your settings with `wandb.init()` arguments, please refer to https://wandb.me/wandb-init.
+Traceback (most recent call last):
+  File "D:\mmt\main.py", line 209, in <module>
+    test_loss = train.initiate(hyp_params, train_loader, valid_loader, test_loader)
+  File "D:\mmt\src\train.py", line 85, in initiate
+    return train_model(settings, hyp_params, train_loader, valid_loader, test_loader)
+  File "D:\mmt\src\train.py", line 377, in train_model
+    model = load_model(hyp_params, name=hyp_params.name)
+  File "D:\mmt\src\utils.py", line 37, in load_model
+    model = torch.load(f'pre_trained_models/{name}.pt')
+  File "D:\Anaconda\envs\project\lib\site-packages\torch\serialization.py", line 699, in load
+    with _open_file_like(f, 'rb') as opened_file:
+  File "D:\Anaconda\envs\project\lib\site-packages\torch\serialization.py", line 231, in _open_file_like
+    return _open_file(name_or_buffer, mode)
+  File "D:\Anaconda\envs\project\lib\site-packages\torch\serialization.py", line 212, in __init__
+    super(_open_file, self).__init__(open(name, mode))
+FileNotFoundError: [Errno 2] No such file or directory: 'pre_trained_models/mult_MULT.pt'
