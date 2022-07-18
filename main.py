@@ -13,10 +13,10 @@ from torch.utils.data import DataLoader
 from src import train
 
 print(torch.cuda.device_count())
-device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:512"
-PYTORCH_CUDA_ALLOC_CONF = "max_split_size_mb:512"
+# device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+# os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+# os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:512"
+# PYTORCH_CUDA_ALLOC_CONF = "max_split_size_mb:512"
 
 if not torch.cuda.is_available():
     print("ERROR: no available GPU.")
@@ -71,7 +71,7 @@ parser.add_argument('--attn_mask', action='store_false',
                     help='use attention mask for Transformer (default: true)')
 
 # Tuning
-parser.add_argument('--batch_size', type=int, default=64, metavar='N',  # 4
+parser.add_argument('--batch_size', type=int, default=2, metavar='N',  # 4
                     help='batch size (default: 24)')
 parser.add_argument('--clip', type=float, default=0.8,
                     help='gradient clip value (default: 0.8)')
@@ -79,7 +79,7 @@ parser.add_argument('--lr', type=float, default=1e-3,
                     help='initial learning rate (default: 1e-3)')
 parser.add_argument('--optim', type=str, default='Adam',
                     help='optimizer to use (default: Adam)')
-parser.add_argument('--num_epochs', type=int, default=20,
+parser.add_argument('--num_epochs', type=int, default=150,
                     help='number of epochs (default: 40)')
 parser.add_argument('--when', type=int, default=20,
                     help='when to decay learning rate (default: 20)')
@@ -150,10 +150,37 @@ print('Finish loading the data....')
 if not args.aligned:
     print("### Note: You are running in unaligned mode.")
 
-#
-# print("test-data-check:")
-# print(test_data.meta[:4])
-# print("type:", test_data.meta.shape)    # (4659, 3) [id, start, end]
+
+print("test-data-check:")
+# print("len::", len(test_data))    # (4659, 3) [id, start, end]  171;
+# print("type:", type(test_data))
+# print("meta.shape:", test_data.meta.shape)
+# print("meta.len:", len(test_data.meta))
+# 从test_set中, 获取的数据sample为: sample_ind: tensor([158,  45,  85,  28, 141,  57])
+print("real_sample:")
+# print(test_data.meta[56])  # 19
+# print(test_data.meta[119]) # 18
+# print(test_data.meta[36])  # 15
+# print(test_data.meta[44])  # 06
+# print(test_data.meta[45])
+# print(test_data.meta[85])
+# print(test_data.meta[28])
+# print(test_data.meta[141])
+# print(test_data.meta[57])
+# print("ck1", test_data.meta[256][0])
+# for i in test_data.meta:
+#     if i[0].isnumeric():
+#         print(i)
+#     if i[0] in ['30762', '30762_14']:
+#         print("----", i)
+
+print("real_sample:. done.")
+
+# print('meta:', test_data.meta)
+# ck_test = test_data[:args.batch_size]
+# print("ck,", ck_test)
+input("start:")
+
 # print("id:", test_data.meta[917])       # id: ['245582' '11.326' '16.207']
 # print("id:", test_data.meta[903])       # id: ['24504' '32.857' '41.18']
 # print("id:", test_data.meta[1214])      # id: ['29751' '7.115' '14.381']
@@ -181,6 +208,7 @@ hyp_params.output_dim = output_dim_dict.get(dataset, 1)
 hyp_params.criterion = criterion_dict.get(dataset, 'L1Loss')
 
 print("n_train:", hyp_params.n_train)
+print("n_test:", hyp_params.n_test)
 
 if __name__ == '__main__':
     # print(torch.cuda.memory_summary())
