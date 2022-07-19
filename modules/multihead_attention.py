@@ -1,8 +1,11 @@
 import torch
+from matplotlib import pyplot as plt
 from torch import nn
 from torch.nn import Parameter
 import torch.nn.functional as F
+import pickle as pkl
 import sys
+from cca_zoo.models import MCCA
 
 # Code adapted from the fairseq repo.
 
@@ -117,20 +120,69 @@ class MultiheadAttention(nn.Module):
                 print(attn_mask.unsqueeze(0).shape)
                 assert False
                 
+        # attn_weights = F.softmax(attn_weights.float(), dim=-1).type_as(attn_weights)
+        # # attn_weights = F.relu(attn_weights)
+        # # attn_weights = attn_weights / torch.max(attn_weights)
+        # attn_weights = F.dropout(attn_weights, p=self.attn_dropout, training=self.training)
+        # print(f"[check-attn-weight shape]: {attn_weights.shape}")  # [2 * 10, 50, 375] = [bsz * heads, ]
+        #
+        # attn = torch.bmm(attn_weights, v)
+        # print(f"[check-attn shape]: {attn.shape}")
+        # input()
+        # assert list(attn.size()) == [bsz * self.num_heads, tgt_len, self.head_dim]  # [20, 50, 4]
+        #
+        # attn = attn.transpose(0, 1).contiguous().view(tgt_len, bsz, embed_dim)
+        # attn = self.out_proj(attn)
+
+        def cur_show(ws, title="null"):
+            ws = ws.cpu().clone().detach().numpy()
+            plt.matshow(ws)
+            plt.title(title)
+            plt.show()
+
         attn_weights = F.softmax(attn_weights.float(), dim=-1).type_as(attn_weights)
         # attn_weights = F.relu(attn_weights)
         # attn_weights = attn_weights / torch.max(attn_weights)
         attn_weights = F.dropout(attn_weights, p=self.attn_dropout, training=self.training)
+        # print(f"[check-attn-weight shape]: {attn_weights.shape}")  # [2 * 10, 50, 375] = [bsz * heads, tgt_len, src_len]
+        # print(f"attn_w_[0] (sample-1-h-1):\n", attn_weights[0])
+        # cur_show(attn_weights[0])
 
+        # 计算相关性
         attn = torch.bmm(attn_weights, v)
-        assert list(attn.size()) == [bsz * self.num_heads, tgt_len, self.head_dim]
+        # print(f"[check-attn shape]: {attn.shape}")
+        # input()
+        assert list(attn.size()) == [bsz * self.num_heads, tgt_len, self.head_dim]  # [20, 50, 4]  # head_dim, 每个head平均从[all_dim获取一定的head_dim];
 
-        attn = attn.transpose(0, 1).contiguous().view(tgt_len, bsz, embed_dim)
+        # head-proc
+        attn1 = attn.reshape(bsz, self.num_heads, tgt_len, self.head_dim).transpose(1, -1)  # [bsz, tgt_len, head_dim, num_heads]
+        head_linear = nn.Linear(self.num_heads, 1)  # 多元回归, in_size=num_heads, out_size=1;
+        whole_heads = head_linear(attn1)
+        # print("whole-heads:", whole_heads.shape, "\n", whole_heads)  # [2, 4, 50, 1]
+
+        # normalize weight
+        heads_weight = F.softmax(head_linear.weight)
+        heads_weight = heads_weight / heads_weight.max()
+        weight = heads_weight.unsqueeze(2).unsqueeze(3)  # [1, num_heads] => [1, num_heads, 1, 1], broadcast
+
+        # print("shape-1:", attn.shape)
+        # print("shape-2:", weight.shape)
+
+        attn = attn.reshape(bsz, self.num_heads, tgt_len, self.head_dim)
+        attn = attn * weight  # 对attn, 按head, 进行weight;
+
+        attn = attn.transpose(0, 1).contiguous().view(tgt_len, bsz, embed_dim)  # 这里进行了[heads]合并
         attn = self.out_proj(attn)
 
-        # average attention weights over heads
-        attn_weights = attn_weights.view(bsz, self.num_heads, tgt_len, src_len)
-        attn_weights = attn_weights.sum(dim=1) / self.num_heads
+        def pkl_encoder(var, file_name):
+            # pickle a variable to a file
+            file = open(file_name, 'wb')
+            pkl.dump(var.cpu().clone(), file)
+            file.close()
+            print("save ok!")
+            input()
+        # pkl_encoder(attn_weights, "mosi_attn.pkl")
+
         return attn, attn_weights
 
     def in_proj_qkv(self, query):

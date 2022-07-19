@@ -179,7 +179,7 @@ print("real_sample:. done.")
 # print('meta:', test_data.meta)
 # ck_test = test_data[:args.batch_size]
 # print("ck,", ck_test)
-input("start:")
+print("start:")
 
 # print("id:", test_data.meta[917])       # id: ['245582' '11.326' '16.207']
 # print("id:", test_data.meta[903])       # id: ['24504' '32.857' '41.18']

@@ -93,6 +93,10 @@ def train_model(settings, hyp_params, train_loader, valid_loader, test_loader):
         proc_loss, proc_size = 0, 0
         start_time = time.time()
         for i_batch, (batch_X, batch_Y, batch_META) in enumerate(train_loader):
+
+            # print(f">>> [batch_idx]: {i_batch}")
+            # input()
+
             sample_ind, text, audio, vision = batch_X
             eval_attr = batch_Y.squeeze(-1)  # if num of labels is 1
 

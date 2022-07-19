@@ -76,6 +76,7 @@ class TransformerEncoder(nn.Module):
             x_v = F.dropout(x_v, p=self.dropout, training=self.training)
         
         # encoder layers
+        layer_idx = 0
         intermediates = [x]
         for layer in self.layers:
             if x_in_k is not None and x_in_v is not None:
@@ -83,6 +84,9 @@ class TransformerEncoder(nn.Module):
             else:
                 x = layer(x)
             intermediates.append(x)
+
+            # print(f"[layer-idx]: {layer_idx}")
+            layer_idx += 1
 
         if self.normalize:
             x = self.layer_norm(x)
@@ -143,6 +147,10 @@ class TransformerEncoderLayer(nn.Module):
         """
         residual = x
         x = self.maybe_layer_norm(0, x, before=True)
+
+        # print("check-output-0:", x.shape)  # [50, 2, 40]
+        # input()
+
         mask = buffered_future_mask(x, x_k) if self.attn_mask else None
         if x_k is None and x_v is None:
             x, _ = self.self_attn(query=x, key=x, value=x, attn_mask=mask)
@@ -150,9 +158,17 @@ class TransformerEncoderLayer(nn.Module):
             x_k = self.maybe_layer_norm(0, x_k, before=True)
             x_v = self.maybe_layer_norm(0, x_v, before=True) 
             x, _ = self.self_attn(query=x, key=x_k, value=x_v, attn_mask=mask)
+
+            # print("check-output-[-]:", x.shape)  # [50, 2, 40]
+
+        """ check-len """
+        # print("check-output-1:", x.shape)  # [50, 2, 40]
+
         x = F.dropout(x, p=self.res_dropout, training=self.training)
         x = residual + x
         x = self.maybe_layer_norm(0, x, after=True)
+
+        # print("check-output-2:", x.shape)  # [50, 2, 40]
 
         residual = x
         x = self.maybe_layer_norm(1, x, before=True)
@@ -162,6 +178,10 @@ class TransformerEncoderLayer(nn.Module):
         x = F.dropout(x, p=self.res_dropout, training=self.training)
         x = residual + x
         x = self.maybe_layer_norm(1, x, after=True)
+
+        # print("check-output-3:", x.shape)  # [50, 2, 40]
+        # input()
+
         return x
 
     def maybe_layer_norm(self, i, x, before=False, after=False):
