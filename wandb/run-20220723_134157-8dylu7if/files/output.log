@@ -1,0 +1,48 @@
+1
+CUDA: OK
+Start loading the data....
+  - Found cached train data
+  - Found cached valid data
+  - Found cached test data
+<class 'src.dataset.Multimodal_Datasets'>
+Finish loading the data....
+### Note: You are running in unaligned mode.
+test-data-check:
+real_sample:
+real_sample:. done.
+start:
+n_train: 1284
+n_test: 686
+dict: {'lr': 0.001, 'optim': 'Adam', 'num_epochs': 150, 'nlevels': 5, 'num_heads': 10, 'batch_size': 2, 'clip': 0.8, 'attn_dropout': 0.2, 'out_dropout': 0.1, 'embed_dropout': 0.2}
+wandb: WARNING Changes to your `wandb` environment variables will be ignored because your `wandb` session has already started. For more information on how to modify your settings with `wandb.init()` arguments, please refer to https://wandb.me/wandb-init.
+D:\mmt\modules\position_embedding.py:21: UserWarning: The number of elements in the out tensor of shape [50] is 50 which does not match the computed number of elements 375. Note that this may occur as a result of rounding error. The out tensor will be resized to a tensor of shape (375,). (Triggered internally at  C:\actions-runner\_work\pytorch\pytorch\builder\windows\pytorch\aten\src\ATen\native\cuda\RangeFactories.cu:251.)
+  torch.arange(padding_idx + 1, max_pos, out=getattr(make_positions, buf_name))
+D:\mmt\modules\position_embedding.py:21: UserWarning: The number of elements in the out tensor of shape [375] is 375 which does not match the computed number of elements 500. Note that this may occur as a result of rounding error. The out tensor will be resized to a tensor of shape (500,). (Triggered internally at  C:\actions-runner\_work\pytorch\pytorch\builder\windows\pytorch\aten\src\ATen\native\cuda\RangeFactories.cu:251.)
+  torch.arange(padding_idx + 1, max_pos, out=getattr(make_positions, buf_name))
+Epoch  1 | Batch  30/642 | Time/Batch(ms) 1529.50 | Train Loss 1.5030
+Epoch  1 | Batch  60/642 | Time/Batch(ms) 1418.29 | Train Loss 1.3398
+Epoch  1 | Batch  90/642 | Time/Batch(ms) 1312.86 | Train Loss 1.7170
+Epoch  1 | Batch 120/642 | Time/Batch(ms) 1284.84 | Train Loss 1.3527
+Epoch  1 | Batch 150/642 | Time/Batch(ms) 1365.25 | Train Loss 1.3900
+Epoch  1 | Batch 180/642 | Time/Batch(ms) 1298.83 | Train Loss 1.2165
+Epoch  1 | Batch 210/642 | Time/Batch(ms) 1301.58 | Train Loss 1.3788
+Epoch  1 | Batch 240/642 | Time/Batch(ms) 1400.45 | Train Loss 1.2260
+Epoch  1 | Batch 270/642 | Time/Batch(ms) 1317.82 | Train Loss 1.2574
+Epoch  1 | Batch 300/642 | Time/Batch(ms) 1332.00 | Train Loss 1.3604
+Epoch  1 | Batch 330/642 | Time/Batch(ms) 1321.53 | Train Loss 1.4722
+Epoch  1 | Batch 360/642 | Time/Batch(ms) 1306.83 | Train Loss 1.2626
+Epoch  1 | Batch 390/642 | Time/Batch(ms) 1264.11 | Train Loss 1.2754
+Epoch  1 | Batch 420/642 | Time/Batch(ms) 1296.45 | Train Loss 1.2924
+Epoch  1 | Batch 450/642 | Time/Batch(ms) 1309.21 | Train Loss 1.2509
+Epoch  1 | Batch 480/642 | Time/Batch(ms) 1317.68 | Train Loss 1.3010
+Epoch  1 | Batch 510/642 | Time/Batch(ms) 1311.66 | Train Loss 1.4349
+Epoch  1 | Batch 540/642 | Time/Batch(ms) 1265.90 | Train Loss 1.3987
+Epoch  1 | Batch 570/642 | Time/Batch(ms) 1269.84 | Train Loss 1.3559
+Epoch  1 | Batch 600/642 | Time/Batch(ms) 1341.05 | Train Loss 1.0740
+Epoch  1 | Batch 630/642 | Time/Batch(ms) 1327.81 | Train Loss 1.3224
+--------------------------------------------------
+Epoch  1 | Time 869.1336 sec | Valid Loss 1.2347 | Test Loss 1.2041
+--------------------------------------------------
+Saved model at pre_trained_models/mult.pt!
+Epoch  2 | Batch  30/642 | Time/Batch(ms) 1363.35 | Train Loss 1.1997
+Epoch  2 | Batch  60/642 | Time/Batch(ms) 1298.45 | Train Loss 1.1339

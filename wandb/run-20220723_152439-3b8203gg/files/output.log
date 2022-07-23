@@ -1,0 +1,65 @@
+
+wandb: WARNING Changes to your `wandb` environment variables will be ignored because your `wandb` session has already started. For more information on how to modify your settings with `wandb.init()` arguments, please refer to https://wandb.me/wandb-init.
+1
+CUDA: OK
+Start loading the data....
+  - Found cached train data
+  - Found cached valid data
+  - Found cached test data
+<class 'src.dataset.Multimodal_Datasets'>
+Finish loading the data....
+### Note: You are running in unaligned mode.
+test-data-check:
+real_sample:
+real_sample:. done.
+start:
+n_train: 1284
+n_test: 686
+dict: {'lr': 0.001, 'optim': 'Adam', 'num_epochs': 150, 'nlevels': 5, 'num_heads': 10, 'batch_size': 8, 'clip': 0.8, 'attn_dropout': 0.2, 'out_dropout': 0.1, 'embed_dropout': 0.2}
+D:\mmt\modules\position_embedding.py:21: UserWarning: The number of elements in the out tensor of shape [50] is 50 which does not match the computed number of elements 375. Note that this may occur as a result of rounding error. The out tensor will be resized to a tensor of shape (375,). (Triggered internally at  C:\actions-runner\_work\pytorch\pytorch\builder\windows\pytorch\aten\src\ATen\native\cuda\RangeFactories.cu:251.)
+  torch.arange(padding_idx + 1, max_pos, out=getattr(make_positions, buf_name))
+D:\mmt\modules\position_embedding.py:21: UserWarning: The number of elements in the out tensor of shape [375] is 375 which does not match the computed number of elements 500. Note that this may occur as a result of rounding error. The out tensor will be resized to a tensor of shape (500,). (Triggered internally at  C:\actions-runner\_work\pytorch\pytorch\builder\windows\pytorch\aten\src\ATen\native\cuda\RangeFactories.cu:251.)
+  torch.arange(padding_idx + 1, max_pos, out=getattr(make_positions, buf_name))
+D:\Anaconda\envs\project\lib\site-packages\torch\autograd\__init__.py:173: UserWarning: Error detected in SoftmaxBackward0. Traceback of forward call that caused the error:
+  File "D:\mmt\main.py", line 237, in <module>
+    test_loss = train.initiate(hyp_params, train_loader, valid_loader, test_loader)
+  File "D:\mmt\src\train.py", line 67, in initiate
+    return train_model(settings, hyp_params, train_loader, valid_loader, test_loader)
+  File "D:\mmt\src\train.py", line 244, in train_model
+    train(model, optimizer, criterion, ctc_a2l_module, ctc_v2l_module, ctc_a2l_optimizer, ctc_v2l_optimizer, ctc_criterion)
+  File "D:\mmt\src\train.py", line 166, in train
+    preds, hiddens = net(text, audio, vision)
+  File "D:\Anaconda\envs\project\lib\site-packages\torch\nn\modules\module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "D:\mmt\src\models.py", line 133, in forward
+    h_vs = self.trans_v_mem(h_vs)
+  File "D:\Anaconda\envs\project\lib\site-packages\torch\nn\modules\module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "D:\mmt\modules\transformer.py", line 85, in forward
+    x = layer(x)
+  File "D:\Anaconda\envs\project\lib\site-packages\torch\nn\modules\module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "D:\mmt\modules\transformer.py", line 156, in forward
+    x, _ = self.self_attn(query=x, key=x, value=x, attn_mask=mask)
+  File "D:\Anaconda\envs\project\lib\site-packages\torch\nn\modules\module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "D:\mmt\modules\multihead_attention.py", line 147, in forward
+    attn_weights = F.softmax(attn_weights.float(), dim=-1).type_as(attn_weights)
+  File "D:\Anaconda\envs\project\lib\site-packages\torch\nn\functional.py", line 1818, in softmax
+    ret = input.softmax(dim)
+ (Triggered internally at  C:\actions-runner\_work\pytorch\pytorch\builder\windows\pytorch\torch\csrc\autograd\python_anomaly_mode.cpp:104.)
+  Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+Traceback (most recent call last):
+  File "D:\mmt\main.py", line 237, in <module>
+    test_loss = train.initiate(hyp_params, train_loader, valid_loader, test_loader)
+  File "D:\mmt\src\train.py", line 67, in initiate
+    return train_model(settings, hyp_params, train_loader, valid_loader, test_loader)
+  File "D:\mmt\src\train.py", line 244, in train_model
+    train(model, optimizer, criterion, ctc_a2l_module, ctc_v2l_module, ctc_a2l_optimizer, ctc_v2l_optimizer, ctc_criterion)
+  File "D:\mmt\src\train.py", line 172, in train
+    combined_loss.backward()
+  File "D:\Anaconda\envs\project\lib\site-packages\torch\_tensor.py", line 363, in backward
+    torch.autograd.backward(self, gradient, retain_graph, create_graph, inputs=inputs)
+  File "D:\Anaconda\envs\project\lib\site-packages\torch\autograd\__init__.py", line 173, in backward
+    Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+RuntimeError: CUDA out of memory. Tried to allocate 78.00 MiB (GPU 0; 4.00 GiB total capacity; 3.39 GiB already allocated; 0 bytes free; 3.47 GiB reserved in total by PyTorch) If reserved memory is >> allocated memory try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF

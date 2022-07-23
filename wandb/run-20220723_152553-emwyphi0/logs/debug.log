@@ -1,0 +1,12 @@
+2022-07-23 15:25:53,555 INFO    MainThread:1048 [wandb_setup.py:_flush():76] Loading settings from C:\Users\yaoting\.config\wandb\settings
+2022-07-23 15:25:53,555 INFO    MainThread:1048 [wandb_setup.py:_flush():76] Loading settings from D:\mmt\wandb\settings
+2022-07-23 15:25:53,555 INFO    MainThread:1048 [wandb_setup.py:_flush():76] Loading settings from environment variables: {}
+2022-07-23 15:25:53,555 INFO    MainThread:1048 [wandb_setup.py:_flush():76] Inferring run settings from compute environment: {'program_relpath': 'main.py', 'program': 'D:\\mmt\\main.py'}
+2022-07-23 15:25:53,555 INFO    MainThread:1048 [wandb_init.py:_log_setup():428] Logging user logs to D:\mmt\wandb\run-20220723_152553-emwyphi0\logs\debug.log
+2022-07-23 15:25:53,556 INFO    MainThread:1048 [wandb_init.py:_log_setup():429] Logging internal logs to D:\mmt\wandb\run-20220723_152553-emwyphi0\logs\debug-internal.log
+2022-07-23 15:25:53,556 INFO    MainThread:1048 [wandb_init.py:init():462] calling init triggers
+2022-07-23 15:25:53,556 INFO    MainThread:1048 [wandb_init.py:init():465] wandb.init called with sweep_config: {}
+config: {'lr': 0.001, 'optim': 'Adam', 'num_epochs': 150, 'nlevels': 5, 'num_heads': 10, 'batch_size': 6, 'clip': 0.8, 'attn_dropout': 0.2, 'out_dropout': 0.1, 'embed_dropout': 0.2}
+2022-07-23 15:25:53,556 INFO    MainThread:1048 [wandb_init.py:init():510] wandb.init() called when a run is still active
+2022-07-23 16:11:35,519 INFO    MainThread:1048 [wandb_run.py:_atexit_cleanup():1867] got exitcode: 255
+2022-07-23 16:11:35,522 INFO    MainThread:1048 [wandb_run.py:_restore():1839] restore

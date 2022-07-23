@@ -1,0 +1,24 @@
+{
+    "os": "Windows-10-10.0.19044-SP0",
+    "python": "3.9.12",
+    "heartbeatAt": "2022-07-23T14:18:59.279902",
+    "startedAt": "2022-07-23T14:18:56.215153",
+    "docker": null,
+    "gpu": "NVIDIA GeForce RTX 3050 Laptop GPU",
+    "gpu_count": 1,
+    "cpu_count": 12,
+    "cuda": null,
+    "args": [],
+    "state": "running",
+    "program": "D:\\mmt\\main.py",
+    "codePath": "main.py",
+    "git": {
+        "remote": "https://github.com/Midoriya-Gh0st/mmt.git",
+        "commit": "85a8869afa7683f2f53f9f057c17b092e6bc2a93"
+    },
+    "email": "ryanwang9966@gmail.com",
+    "root": "D:/mmt",
+    "host": "DESKTOP-FHKDOSV",
+    "username": "delll",
+    "executable": "D:\\Anaconda\\envs\\project\\python.exe"
+}

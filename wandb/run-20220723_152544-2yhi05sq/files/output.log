@@ -1,0 +1,77 @@
+
+wandb: WARNING Changes to your `wandb` environment variables will be ignored because your `wandb` session has already started. For more information on how to modify your settings with `wandb.init()` arguments, please refer to https://wandb.me/wandb-init.
+1
+CUDA: OK
+Start loading the data....
+  - Found cached train data
+  - Found cached valid data
+  - Found cached test data
+<class 'src.dataset.Multimodal_Datasets'>
+Finish loading the data....
+### Note: You are running in unaligned mode.
+test-data-check:
+real_sample:
+real_sample:. done.
+start:
+n_train: 1284
+n_test: 686
+dict: {'lr': 0.001, 'optim': 'Adam', 'num_epochs': 150, 'nlevels': 5, 'num_heads': 10, 'batch_size': 6, 'clip': 0.8, 'attn_dropout': 0.2, 'out_dropout': 0.1, 'embed_dropout': 0.2}
+D:\mmt\modules\position_embedding.py:21: UserWarning: The number of elements in the out tensor of shape [50] is 50 which does not match the computed number of elements 375. Note that this may occur as a result of rounding error. The out tensor will be resized to a tensor of shape (375,). (Triggered internally at  C:\actions-runner\_work\pytorch\pytorch\builder\windows\pytorch\aten\src\ATen\native\cuda\RangeFactories.cu:251.)
+  torch.arange(padding_idx + 1, max_pos, out=getattr(make_positions, buf_name))
+D:\mmt\modules\position_embedding.py:21: UserWarning: The number of elements in the out tensor of shape [375] is 375 which does not match the computed number of elements 500. Note that this may occur as a result of rounding error. The out tensor will be resized to a tensor of shape (500,). (Triggered internally at  C:\actions-runner\_work\pytorch\pytorch\builder\windows\pytorch\aten\src\ATen\native\cuda\RangeFactories.cu:251.)
+  torch.arange(padding_idx + 1, max_pos, out=getattr(make_positions, buf_name))
+Epoch  1 | Batch  30/214 | Time/Batch(ms) 1531.51 | Train Loss 1.5552
+Epoch  1 | Batch  60/214 | Time/Batch(ms) 1381.15 | Train Loss 1.3999
+Epoch  1 | Batch  90/214 | Time/Batch(ms) 1394.26 | Train Loss 1.2792
+Epoch  1 | Batch 120/214 | Time/Batch(ms) 1387.14 | Train Loss 1.4280
+Epoch  1 | Batch 150/214 | Time/Batch(ms) 1392.61 | Train Loss 1.2965
+Epoch  1 | Batch 180/214 | Time/Batch(ms) 1392.28 | Train Loss 1.2585
+Epoch  1 | Batch 210/214 | Time/Batch(ms) 1461.37 | Train Loss 1.2008
+--------------------------------------------------
+Epoch  1 | Time 313.2726 sec | Valid Loss 1.2607 | Test Loss 1.3290
+--------------------------------------------------
+Saved model at pre_trained_models/mult.pt!
+Epoch  2 | Batch  30/214 | Time/Batch(ms) 1441.93 | Train Loss 1.1687
+Epoch  2 | Batch  60/214 | Time/Batch(ms) 1396.70 | Train Loss 1.0867
+Epoch  2 | Batch  90/214 | Time/Batch(ms) 2450.43 | Train Loss 1.2116
+Epoch  2 | Batch 120/214 | Time/Batch(ms) 4959.74 | Train Loss 1.5020
+Epoch  2 | Batch 150/214 | Time/Batch(ms) 5069.79 | Train Loss 1.0834
+Epoch  2 | Batch 180/214 | Time/Batch(ms) 8978.09 | Train Loss 1.0646
+Epoch  2 | Batch 210/214 | Time/Batch(ms) 7214.16 | Train Loss 1.0084
+--------------------------------------------------
+Epoch  2 | Time 1327.9688 sec | Valid Loss 1.1930 | Test Loss 1.3950
+--------------------------------------------------
+Saved model at pre_trained_models/mult.pt!
+Epoch  3 | Batch  30/214 | Time/Batch(ms) 2285.96 | Train Loss 1.0959
+Epoch  3 | Batch  60/214 | Time/Batch(ms) 1399.75 | Train Loss 1.0324
+Epoch  3 | Batch  90/214 | Time/Batch(ms) 1466.83 | Train Loss 0.9267
+Epoch  3 | Batch 120/214 | Time/Batch(ms) 1401.50 | Train Loss 1.0007
+Epoch  3 | Batch 150/214 | Time/Batch(ms) 1472.55 | Train Loss 0.9884
+Epoch  3 | Batch 180/214 | Time/Batch(ms) 1481.23 | Train Loss 0.9855
+Epoch  3 | Batch 210/214 | Time/Batch(ms) 1414.49 | Train Loss 1.0705
+--------------------------------------------------
+Epoch  3 | Time 343.8197 sec | Valid Loss 1.1116 | Test Loss 1.1243
+--------------------------------------------------
+Saved model at pre_trained_models/mult.pt!
+Epoch  4 | Batch  30/214 | Time/Batch(ms) 1464.44 | Train Loss 0.9314
+Epoch  4 | Batch  60/214 | Time/Batch(ms) 1430.39 | Train Loss 0.8399
+Epoch  4 | Batch  90/214 | Time/Batch(ms) 1479.73 | Train Loss 0.9118
+Epoch  4 | Batch 120/214 | Time/Batch(ms) 1438.07 | Train Loss 1.0311
+Epoch  4 | Batch 150/214 | Time/Batch(ms) 1437.59 | Train Loss 1.0622
+Epoch  4 | Batch 180/214 | Time/Batch(ms) 1449.78 | Train Loss 0.9525
+Epoch  4 | Batch 210/214 | Time/Batch(ms) 1443.49 | Train Loss 0.7864
+--------------------------------------------------
+Epoch  4 | Time 319.5791 sec | Valid Loss 1.0146 | Test Loss 1.0181
+--------------------------------------------------
+Saved model at pre_trained_models/mult.pt!
+Epoch  5 | Batch  30/214 | Time/Batch(ms) 1575.82 | Train Loss 0.7915
+Epoch  5 | Batch  60/214 | Time/Batch(ms) 1433.95 | Train Loss 0.8239
+Epoch  5 | Batch  90/214 | Time/Batch(ms) 1412.94 | Train Loss 0.8198
+Epoch  5 | Batch 120/214 | Time/Batch(ms) 1436.10 | Train Loss 0.9334
+Epoch  5 | Batch 150/214 | Time/Batch(ms) 1464.86 | Train Loss 0.7956
+Epoch  5 | Batch 180/214 | Time/Batch(ms) 1455.21 | Train Loss 0.9445
+Epoch  5 | Batch 210/214 | Time/Batch(ms) 1411.50 | Train Loss 0.9352
+--------------------------------------------------
+Epoch  5 | Time 320.9582 sec | Valid Loss 1.0345 | Test Loss 1.0943
+--------------------------------------------------
+Epoch  6 | Batch  30/214 | Time/Batch(ms) 1500.60 | Train Loss 0.8191
