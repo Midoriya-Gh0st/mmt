@@ -32,9 +32,28 @@ def get_CTC_module(hyp_params):
     v2l_module = getattr(ctc, 'CTCModule')(in_dim=hyp_params.orig_d_v, out_seq_len=hyp_params.l_len)
     return a2l_module, v2l_module
 
+def model_stat(m):
+    """ Model Statistics """
+    print("[Model stat:]")
+
+    def print_params():
+        for name, parameters in m.named_parameters():
+            print(name, ':', parameters.size())
+
+    def get_parameter_number():
+        total_num = sum(p.numel() for p in m.parameters())
+        trainable_num = sum(p.numel() for p in m.parameters() if p.requires_grad)
+        return {'Total': total_num, 'Trainable': trainable_num}
+
+    print("[Model Size.]")
+    size = get_parameter_number()
+    print(size)
+    input("done.")
+    # -----------------
 
 def initiate(hyp_params, train_loader, valid_loader, test_loader):
     model = getattr(models, hyp_params.model + 'Model')(hyp_params)
+    model_stat(model)
 
     if hyp_params.use_cuda:
         model = model.cuda()
