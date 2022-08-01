@@ -1,0 +1,20 @@
+
+wandb: WARNING Changes to your `wandb` environment variables will be ignored because your `wandb` session has already started. For more information on how to modify your settings with `wandb.init()` arguments, please refer to https://wandb.me/wandb-init.
+1
+CUDA: OK
+Start loading the data....
+  - Found cached train data
+  - Found cached valid data
+  - Found cached test data
+<class 'src.dataset.Multimodal_Datasets'>
+Finish loading the data....
+test-data-check:
+real_sample:
+real_sample:. done.
+start:
+n_train: 1284
+n_test: 686
+dict: {'lr': 0.001, 'optim': 'Adam', 'num_epochs': 150, 'nlevels': 5, 'num_heads': 10, 'batch_size': 6, 'clip': 0.8, 'attn_dropout': 0.2, 'out_dropout': 0.1, 'embed_dropout': 0.2}
+Epoch  1 | Batch  30/214 | Time/Batch(ms) 1481.12 | Train Loss 1.5768
+Epoch  1 | Batch  60/214 | Time/Batch(ms) 1407.85 | Train Loss 1.2559
+Epoch  1 | Batch  90/214 | Time/Batch(ms) 1426.47 | Train Loss 1.1985

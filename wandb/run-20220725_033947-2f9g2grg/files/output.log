@@ -1,0 +1,10 @@
+1
+CUDA: OK
+Start loading the data....
+  - Found cached train data
+D:\mmt\src\dataset.py:37: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  self.text = torch.tensor(bert_embd[split_type].cpu().detach())
+[self-text]: torch.Size([1284, 50, 768])
+  - Found cached valid data
+[self-text]: torch.Size([229, 50, 768])
+  - Found cached test data

@@ -1,0 +1,100 @@
+1
+CUDA: OK
+Start loading the data....
+  - Creating new train data
+  - Creating new valid data
+wandb: WARNING Changes to your `wandb` environment variables will be ignored because your `wandb` session has already started. For more information on how to modify your settings with `wandb.init()` arguments, please refer to https://wandb.me/wandb-init.
+  - Creating new test data
+<class 'src.dataset.Multimodal_Datasets'>
+Finish loading the data....
+### Note: You are running in unaligned mode.
+test-data-check:
+real_sample:
+real_sample:. done.
+start:
+n_train: 1284
+n_test: 686
+dict: {'lr': 0.001, 'optim': 'Adam', 'num_epochs': 150, 'nlevels': 5, 'num_heads': 10, 'batch_size': 6, 'clip': 0.8, 'attn_dropout': 0.2, 'out_dropout': 0.1, 'embed_dropout': 0.2}
+[1]: ck-text-input:text-shape: torch.Size([6, 50, 300])
+tensor([[[ 0.0000e+00,  0.0000e+00,  0.0000e+00,  ...,  0.0000e+00,
+           0.0000e+00,  0.0000e+00],
+         [ 0.0000e+00,  0.0000e+00,  0.0000e+00,  ...,  0.0000e+00,
+           0.0000e+00,  0.0000e+00],
+         [ 0.0000e+00,  0.0000e+00,  0.0000e+00,  ...,  0.0000e+00,
+           0.0000e+00,  0.0000e+00],
+         ...,
+         [-4.0534e-01,  4.7027e-01, -6.6601e-02,  ..., -2.7371e-01,
+           2.3544e-02,  2.6250e-01],
+         [-4.0534e-01,  4.7027e-01, -6.6601e-02,  ..., -2.7371e-01,
+           2.3544e-02,  2.6250e-01],
+         [-7.2734e-01,  1.8833e-02, -1.4197e-01,  ..., -8.3337e-02,
+           9.6124e-02, -2.7416e-02]],
+        [[ 0.0000e+00,  0.0000e+00,  0.0000e+00,  ...,  0.0000e+00,
+           0.0000e+00,  0.0000e+00],
+         [ 0.0000e+00,  0.0000e+00,  0.0000e+00,  ...,  0.0000e+00,
+           0.0000e+00,  0.0000e+00],
+         [ 0.0000e+00,  0.0000e+00,  0.0000e+00,  ...,  0.0000e+00,
+           0.0000e+00,  0.0000e+00],
+         ...,
+         [-5.2926e-02, -6.4889e-02, -4.1671e-01,  ..., -3.5340e-01,
+           4.1588e-02,  1.0270e-01],
+         [-4.5537e-01, -1.5150e-01, -7.5794e-02,  ..., -2.3551e-01,
+          -1.8117e-02,  1.4497e-01],
+         [-1.4862e-02,  1.5270e-01, -2.8112e-01,  ..., -4.0564e-02,
+           5.6418e-02,  2.3428e-01]],
+        [[ 0.0000e+00,  0.0000e+00,  0.0000e+00,  ...,  0.0000e+00,
+           0.0000e+00,  0.0000e+00],
+         [ 0.0000e+00,  0.0000e+00,  0.0000e+00,  ...,  0.0000e+00,
+           0.0000e+00,  0.0000e+00],
+         [ 0.0000e+00,  0.0000e+00,  0.0000e+00,  ...,  0.0000e+00,
+           0.0000e+00,  0.0000e+00],
+         ...,
+         [-3.9611e-01,  1.8991e-01, -2.0033e-02,  ..., -3.8674e-01,
+           8.5543e-02,  1.0899e-01],
+         [ 2.7204e-01, -6.2030e-02, -1.8840e-01,  ...,  1.3015e-01,
+          -1.8317e-01,  1.3230e-01],
+         [-4.7006e-01, -1.2700e-01, -6.5160e-01,  ...,  1.0109e-01,
+          -3.4025e-01,  2.2575e-02]],
+        [[ 0.0000e+00,  0.0000e+00,  0.0000e+00,  ...,  0.0000e+00,
+           0.0000e+00,  0.0000e+00],
+         [ 0.0000e+00,  0.0000e+00,  0.0000e+00,  ...,  0.0000e+00,
+           0.0000e+00,  0.0000e+00],
+         [ 0.0000e+00,  0.0000e+00,  0.0000e+00,  ...,  0.0000e+00,
+           0.0000e+00,  0.0000e+00],
+         ...,
+         [-2.1162e-01,  5.0881e-01, -3.5808e-01,  ..., -1.8072e-01,
+           2.8116e-01,  1.6978e-01],
+         [-6.3642e-01, -3.4327e-01, -8.7017e-02,  ..., -1.4039e-02,
+           5.7660e-01, -2.8791e-01],
+         [-4.7911e-01, -3.7929e-01,  3.6957e-01,  ..., -4.2946e-01,
+           4.9459e-01,  3.1750e-01]],
+        [[ 0.0000e+00,  0.0000e+00,  0.0000e+00,  ...,  0.0000e+00,
+           0.0000e+00,  0.0000e+00],
+         [ 0.0000e+00,  0.0000e+00,  0.0000e+00,  ...,  0.0000e+00,
+           0.0000e+00,  0.0000e+00],
+         [ 0.0000e+00,  0.0000e+00,  0.0000e+00,  ...,  0.0000e+00,
+           0.0000e+00,  0.0000e+00],
+         ...,
+         [-4.4058e-02,  3.6611e-01,  1.8032e-01,  ...,  1.8625e-01,
+          -9.7817e-02, -6.7104e-05],
+         [ 4.3798e-02,  2.4779e-02, -2.0937e-01,  ..., -3.0099e-01,
+          -1.4584e-01,  2.8188e-01],
+         [-4.7185e-01,  8.3292e-02, -3.9797e-01,  ..., -9.9673e-02,
+           1.1414e-01,  3.7174e-01]],
+        [[ 0.0000e+00,  0.0000e+00,  0.0000e+00,  ...,  0.0000e+00,
+           0.0000e+00,  0.0000e+00],
+         [ 0.0000e+00,  0.0000e+00,  0.0000e+00,  ...,  0.0000e+00,
+           0.0000e+00,  0.0000e+00],
+         [ 0.0000e+00,  0.0000e+00,  0.0000e+00,  ...,  0.0000e+00,
+           0.0000e+00,  0.0000e+00],
+         ...,
+         [-2.6253e-02,  4.1114e-01, -4.6808e-01,  ..., -2.3413e-02,
+           4.7505e-01,  1.2385e-01],
+         [ 2.7204e-01, -6.2030e-02, -1.8840e-01,  ...,  1.3015e-01,
+          -1.8317e-01,  1.3230e-01],
+         [ 6.5428e-02,  7.5564e-02, -7.9023e-02,  ..., -1.5581e-01,
+           1.9722e-01,  4.3777e-01]]], device='cpu')
+D:\mmt\modules\position_embedding.py:21: UserWarning: The number of elements in the out tensor of shape [50] is 50 which does not match the computed number of elements 375. Note that this may occur as a result of rounding error. The out tensor will be resized to a tensor of shape (375,). (Triggered internally at  C:\actions-runner\_work\pytorch\pytorch\builder\windows\pytorch\aten\src\ATen\native\cuda\RangeFactories.cu:251.)
+  torch.arange(padding_idx + 1, max_pos, out=getattr(make_positions, buf_name))
+D:\mmt\modules\position_embedding.py:21: UserWarning: The number of elements in the out tensor of shape [375] is 375 which does not match the computed number of elements 500. Note that this may occur as a result of rounding error. The out tensor will be resized to a tensor of shape (500,). (Triggered internally at  C:\actions-runner\_work\pytorch\pytorch\builder\windows\pytorch\aten\src\ATen\native\cuda\RangeFactories.cu:251.)
+  torch.arange(padding_idx + 1, max_pos, out=getattr(make_positions, buf_name))

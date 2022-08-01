@@ -1,8 +1,11 @@
+import datetime
 import os
-
+import random
 import wandb
+import numpy as np
 
 wandb.init(project="test-project", entity="ytwang-dst")
+wandb.run.log_code(".")
 
 os.environ['OPENBLAS_NUM_THREADS'] = '1'
 os.environ["WANDB_DIR"] = os.path.abspath("./logs")
@@ -27,6 +30,10 @@ torch.cuda.empty_cache()
 
 parser = argparse.ArgumentParser(description='MOSEI Sentiment Analysis')
 parser.add_argument('-f', default='', type=str)
+
+# Train / Test
+parser.add_argument('--et', type=str, default='train',
+                    help='train / test')
 
 # Fixed
 parser.add_argument('--model', type=str, default='MulT',
@@ -61,25 +68,42 @@ parser.add_argument('--res_dropout', type=float, default=0.1,
                     help='residual block dropout')
 parser.add_argument('--out_dropout', type=float, default=0.1,  # 0.0
                     help='output layer dropout')
+"""
+OG:
+parser.add_argument('--attn_dropout', type=float, default=0.2,  # 0.1
+                    help='attention dropout')
+parser.add_argument('--attn_dropout_a', type=float, default=0.2,  # 0.0
+                    help='attention dropout (for audio)')
+parser.add_argument('--attn_dropout_v', type=float, default=0.2,  # 0.0
+                    help='attention dropout (for visual)')
+parser.add_argument('--relu_dropout', type=float, default=0.1,
+                    help='relu dropout')
+parser.add_argument('--embed_dropout', type=float, default=0.2,  # 0.25
+                    help='embedding dropout')
+parser.add_argument('--res_dropout', type=float, default=0.1,
+                    help='residual block dropout')
+parser.add_argument('--out_dropout', type=float, default=0.1,  # 0.0
+                    help='output layer dropout')
+"""
 
 # Architecture
 parser.add_argument('--nlevels', type=int, default=5,
                     help='number of layers in the network (default: 5)')
-parser.add_argument('--num_heads', type=int, default=10,  # 注意要被dim=30可整除
+parser.add_argument('--num_heads', type=int, default=10,
                     help='number of heads for the transformer network (default: 5)')
 parser.add_argument('--attn_mask', action='store_false',
                     help='use attention mask for Transformer (default: true)')
 
 # Tuning
-parser.add_argument('--batch_size', type=int, default=6, metavar='N',  # 4
+parser.add_argument('--batch_size', type=int, default=16, metavar='N',  # 4
                     help='batch size (default: 24)')
 parser.add_argument('--clip', type=float, default=0.8,
                     help='gradient clip value (default: 0.8)')
 parser.add_argument('--lr', type=float, default=1e-3,
                     help='initial learning rate (default: 1e-3)')
-parser.add_argument('--optim', type=str, default='Adam',
+parser.add_argument('--optim', type=str, default='NAdam',
                     help='optimizer to use (default: Adam)')
-parser.add_argument('--num_epochs', type=int, default=150,
+parser.add_argument('--num_epochs', type=int, default=60,
                     help='number of epochs (default: 40)')
 parser.add_argument('--when', type=int, default=20,
                     help='when to decay learning rate (default: 20)')
@@ -89,7 +113,7 @@ parser.add_argument('--batch_chunk', type=int, default=1,
 # Logistics
 parser.add_argument('--log_interval', type=int, default=30,
                     help='frequency of result logging (default: 30)')
-parser.add_argument('--seed', type=int, default=1111,
+parser.add_argument('--seed', type=int, default=42,
                     help='random seed')
 parser.add_argument('--no_cuda', action='store_true',
                     help='do not use cuda')
@@ -97,7 +121,21 @@ parser.add_argument('--name', type=str, default='mult',
                     help='name of the trial (default: "mult")')
 args = parser.parse_args()
 
+# seed
+def set_seed(seed):
+    random.seed(seed)
+    np.random.seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+
 torch.manual_seed(args.seed)
+set_seed(args.seed)
+
+
 dataset = str.lower(args.dataset.strip())
 valid_partial_mode = args.lonly + args.vonly + args.aonly
 
@@ -150,23 +188,13 @@ print('Finish loading the data....')
 if not args.aligned:
     print("### Note: You are running in unaligned mode.")
 
-
 print("test-data-check:")
 # print("len::", len(test_data))    # (4659, 3) [id, start, end]  171;
 # print("type:", type(test_data))
 # print("meta.shape:", test_data.meta.shape)
 # print("meta.len:", len(test_data.meta))
-# 从test_set中, 获取的数据sample为: sample_ind: tensor([158,  45,  85,  28, 141,  57])
 print("real_sample:")
 # print(test_data.meta[56])  # 19
-# print(test_data.meta[119]) # 18
-# print(test_data.meta[36])  # 15
-# print(test_data.meta[44])  # 06
-# print(test_data.meta[45])
-# print(test_data.meta[85])
-# print(test_data.meta[28])
-# print(test_data.meta[141])
-# print(test_data.meta[57])
 # print("ck1", test_data.meta[256][0])
 # for i in test_data.meta:
 #     if i[0].isnumeric():
@@ -183,11 +211,6 @@ print("start:")
 
 # print("id:", test_data.meta[917])       # id: ['245582' '11.326' '16.207']
 # print("id:", test_data.meta[903])       # id: ['24504' '32.857' '41.18']
-# print("id:", test_data.meta[1214])      # id: ['29751' '7.115' '14.381']
-# print("id:", test_data.meta[892])       # id: ['243981' '32.208' '39.185']
-# print("id:", test_data.meta[3843])      # id: ['lYwgLa4R5XQ' '31.7192743764' '36.5006802721']
-# print("id:", test_data.meta[4488])      # id: ['xobMRm5Vs44' '21.672' '26.813']
-#
 ####################################################################
 #
 # Hyperparameters
@@ -206,6 +229,7 @@ hyp_params.n_train, hyp_params.n_valid, hyp_params.n_test = len(train_data), len
 hyp_params.model = str.upper(args.model.strip())
 hyp_params.output_dim = output_dim_dict.get(dataset, 1)
 hyp_params.criterion = criterion_dict.get(dataset, 'L1Loss')
+hyp_params.is_test = args.et
 
 print("n_train:", hyp_params.n_train)
 print("n_test:", hyp_params.n_test)
@@ -215,10 +239,10 @@ if __name__ == '__main__':
     torch.autograd.set_detect_anomaly(True)
 
     hypar_defaults = dict(
-
         lr=hyp_params.lr,  #
         optim=hyp_params.optim,  #
         num_epochs=hyp_params.num_epochs,  #
+        when=hyp_params.when,
 
         nlevels=hyp_params.nlevels,  #
         num_heads=hyp_params.num_heads,  #
@@ -230,8 +254,17 @@ if __name__ == '__main__':
         embed_dropout=hyp_params.embed_dropout,  #
     )
 
-    wandb.init(config=hypar_defaults)
+    # wandb.init(config=hypar_defaults)
     wandb.config = hypar_defaults
-    print("dict:", wandb.config)
+    print("[config]]:", wandb.config)
 
+    wandb.log({'decay': hyp_params.when,
+               'batch_size': args.batch_size,
+               'epochs': args.num_epochs,
+               })
+    print("[decay]:", hyp_params.when)
+    print("[bsz]:", args.batch_size)
+
+    print("[time-start]:", datetime.datetime.now())
     test_loss = train.initiate(hyp_params, train_loader, valid_loader, test_loader)
+    input("Process done.")

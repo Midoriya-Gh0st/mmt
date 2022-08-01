@@ -1,0 +1,20 @@
+1
+CUDA: OK
+Start loading the data....
+  - Found cached train data
+[id]: [[b'03bSnISJMiM_11' b'95.05646259' b'97.2015873']
+ [b'03bSnISJMiM_10' b'93.54988662' b'95.05646259']
+ [b'03bSnISJMiM_13' b'168.8387755' b'170.485034']
+ ...
+ [b'W8NXH0Djyww_31' b'170.9340136' b'173.5380952']
+ [b'W8NXH0Djyww_30' b'169.5172336' b'170.9340136']
+ [b'W8NXH0Djyww_32' b'173.5380952' b'177.6487528']]
+b'03bSnISJMiM_11'
+Traceback (most recent call last):
+  File "D:\mmt\main.py", line 139, in <module>
+    train_data = get_data(args, dataset, 'train')
+  File "D:\mmt\src\utils.py", line 16, in get_data
+    data = Multimodal_Datasets(args.data_path, dataset, split, args.aligned)
+  File "D:\mmt\src\dataset.py", line 40, in __init__
+    iid = info[0].split().split("'")[-1]
+AttributeError: 'list' object has no attribute 'split'

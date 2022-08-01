@@ -1,0 +1,57 @@
+1
+CUDA: OK
+Start loading the data....
+  - Found cached train data
+  - Found cached valid data
+  - Found cached test data
+<class 'src.dataset.Multimodal_Datasets'>
+Finish loading the data....
+### Note: You are running in unaligned mode.
+test-data-check:
+real_sample:
+real_sample:. done.
+start:
+n_train: 1284
+n_test: 686
+[config]]: {'lr': 0.001, 'optim': 'NAdam', 'num_epochs': 60, 'when': 20, 'nlevels': 5, 'num_heads': 10, 'batch_size': 8, 'clip': 0.8, 'attn_dropout': 0.2, 'out_dropout': 0.1, 'embed_dropout': 0.2}
+[decay]: 20
+[bsz]: 8
+[time-start]: 2022-07-26 13:03:30.170387
+text-shape: torch.Size([8, 50, 300])
+bsz[0]:
+tensor([[ 0.0000,  0.0000,  0.0000,  ...,  0.0000,  0.0000,  0.0000],
+        [ 0.0000,  0.0000,  0.0000,  ...,  0.0000,  0.0000,  0.0000],
+        [ 0.0000,  0.0000,  0.0000,  ...,  0.0000,  0.0000,  0.0000],
+        ...,
+        [-0.4053,  0.4703, -0.0666,  ..., -0.2737,  0.0235,  0.2625],
+        [-0.4053,  0.4703, -0.0666,  ..., -0.2737,  0.0235,  0.2625],
+        [-0.7273,  0.0188, -0.1420,  ..., -0.0833,  0.0961, -0.0274]],
+       device='cpu')
+D:\mmt\modules\position_embedding.py:21: UserWarning: The number of elements in the out tensor of shape [375] is 375 which does not match the computed number of elements 500. Note that this may occur as a result of rounding error. The out tensor will be resized to a tensor of shape (500,). (Triggered internally at  C:\actions-runner\_work\pytorch\pytorch\builder\windows\pytorch\aten\src\ATen\native\cuda\RangeFactories.cu:251.)
+  torch.arange(padding_idx + 1, max_pos, out=getattr(make_positions, buf_name))
+Traceback (most recent call last):
+  File "D:\mmt\main.py", line 269, in <module>
+    test_loss = train.initiate(hyp_params, train_loader, valid_loader, test_loader)
+  File "D:\mmt\src\train.py", line 67, in initiate
+    return train_model(settings, hyp_params, train_loader, valid_loader, test_loader)
+  File "D:\mmt\src\train.py", line 249, in train_model
+    train(model, optimizer, criterion, ctc_a2l_module, ctc_v2l_module, ctc_a2l_optimizer, ctc_v2l_optimizer, ctc_criterion)
+  File "D:\mmt\src\train.py", line 171, in train
+    preds, hiddens = net(text, audio, vision)
+  File "D:\Anaconda\envs\project\lib\site-packages\torch\nn\modules\module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "D:\mmt\src\models.py", line 203, in forward
+    h_v_emph_t = self.trans_v_with_t(proj_x_v, h_t_with_a, h_t_with_a)
+  File "D:\Anaconda\envs\project\lib\site-packages\torch\nn\modules\module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "D:\mmt\modules\transformer.py", line 83, in forward
+    x = layer(x, x_k, x_v)
+  File "D:\Anaconda\envs\project\lib\site-packages\torch\nn\modules\module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "D:\mmt\modules\transformer.py", line 160, in forward
+    x, _ = self.self_attn(query=x, key=x_k, value=x_v, attn_mask=mask)
+  File "D:\Anaconda\envs\project\lib\site-packages\torch\nn\modules\module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "D:\mmt\modules\multihead_attention.py", line 117, in forward
+    attn_weights = torch.bmm(q, k.transpose(1, 2))
+RuntimeError: CUDA out of memory. Tried to allocate 78.00 MiB (GPU 0; 4.00 GiB total capacity; 3.39 GiB already allocated; 0 bytes free; 3.43 GiB reserved in total by PyTorch) If reserved memory is >> allocated memory try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF

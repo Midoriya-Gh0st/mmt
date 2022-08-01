@@ -1,0 +1,64 @@
+2022-07-25 00:22:01,237 INFO    MainThread:13208 [internal.py:wandb_internal():90] W&B internal server running at pid: 13208, started at: 2022-07-25 00:22:01.237520
+2022-07-25 00:22:01,239 INFO    WriterThread:13208 [datastore.py:open_for_write():75] open: D:\mmt\wandb\run-20220725_002159-hv183ks8\run-hv183ks8.wandb
+2022-07-25 00:22:01,242 DEBUG   SenderThread:13208 [sender.py:send():235] send: header
+2022-07-25 00:22:01,242 DEBUG   SenderThread:13208 [sender.py:send():235] send: run
+2022-07-25 00:22:01,481 DEBUG   HandlerThread:13208 [handler.py:handle_request():141] handle_request: check_version
+2022-07-25 00:22:01,485 INFO    SenderThread:13208 [dir_watcher.py:__init__():205] watching files in: D:\mmt\wandb\run-20220725_002159-hv183ks8\files
+2022-07-25 00:22:01,485 INFO    SenderThread:13208 [sender.py:_start_run_threads():812] run started: hv183ks8 with start time 1658704920
+2022-07-25 00:22:01,485 DEBUG   SenderThread:13208 [sender.py:send():235] send: summary
+2022-07-25 00:22:01,485 INFO    SenderThread:13208 [sender.py:_save_file():949] saving file wandb-summary.json with policy end
+2022-07-25 00:22:01,486 DEBUG   SenderThread:13208 [sender.py:send_request():249] send_request: check_version
+2022-07-25 00:22:01,598 DEBUG   HandlerThread:13208 [handler.py:handle_request():141] handle_request: run_start
+2022-07-25 00:22:01,636 DEBUG   HandlerThread:13208 [meta.py:__init__():35] meta init
+2022-07-25 00:22:01,636 DEBUG   HandlerThread:13208 [meta.py:__init__():49] meta init done
+2022-07-25 00:22:01,636 DEBUG   HandlerThread:13208 [meta.py:probe():209] probe
+2022-07-25 00:22:01,680 DEBUG   HandlerThread:13208 [meta.py:_setup_git():199] setup git
+2022-07-25 00:22:01,789 DEBUG   HandlerThread:13208 [meta.py:_setup_git():206] setup git done
+2022-07-25 00:22:01,789 DEBUG   HandlerThread:13208 [meta.py:_save_pip():53] save pip
+2022-07-25 00:22:01,790 DEBUG   HandlerThread:13208 [meta.py:_save_pip():67] save pip done
+2022-07-25 00:22:01,790 DEBUG   HandlerThread:13208 [meta.py:_save_conda():74] save conda
+2022-07-25 00:22:02,497 INFO    Thread-11 :13208 [dir_watcher.py:_on_file_created():256] file/dir created: D:\mmt\wandb\run-20220725_002159-hv183ks8\files\requirements.txt
+2022-07-25 00:22:02,498 INFO    Thread-11 :13208 [dir_watcher.py:_on_file_created():256] file/dir created: D:\mmt\wandb\run-20220725_002159-hv183ks8\files\wandb-summary.json
+2022-07-25 00:22:02,498 INFO    Thread-11 :13208 [dir_watcher.py:_on_file_created():256] file/dir created: D:\mmt\wandb\run-20220725_002159-hv183ks8\files\conda-environment.yaml
+2022-07-25 00:22:07,375 DEBUG   HandlerThread:13208 [meta.py:_save_conda():84] save conda done
+2022-07-25 00:22:07,375 DEBUG   HandlerThread:13208 [meta.py:probe():247] probe done
+2022-07-25 00:22:07,538 DEBUG   HandlerThread:13208 [handler.py:handle_request():141] handle_request: stop_status
+2022-07-25 00:22:07,538 DEBUG   SenderThread:13208 [sender.py:send_request():249] send_request: stop_status
+2022-07-25 00:22:07,541 INFO    Thread-11 :13208 [dir_watcher.py:_on_file_modified():269] file/dir modified: D:\mmt\wandb\run-20220725_002159-hv183ks8\files\conda-environment.yaml
+2022-07-25 00:22:07,541 INFO    Thread-11 :13208 [dir_watcher.py:_on_file_created():256] file/dir created: D:\mmt\wandb\run-20220725_002159-hv183ks8\files\output.log
+2022-07-25 00:22:07,541 INFO    Thread-11 :13208 [dir_watcher.py:_on_file_created():256] file/dir created: D:\mmt\wandb\run-20220725_002159-hv183ks8\files\wandb-metadata.json
+2022-07-25 00:22:07,717 DEBUG   SenderThread:13208 [sender.py:send():235] send: telemetry
+2022-07-25 00:22:07,717 DEBUG   SenderThread:13208 [sender.py:send():235] send: files
+2022-07-25 00:22:07,718 INFO    SenderThread:13208 [sender.py:_save_file():949] saving file wandb-metadata.json with policy now
+2022-07-25 00:22:08,255 INFO    Thread-17 :13208 [upload_job.py:push():132] Uploaded file C:\Users\yaoting\AppData\Local\Temp\tmp0ivucpkfwandb\3u6uwej9-wandb-metadata.json
+2022-07-25 00:22:11,279 DEBUG   SenderThread:13208 [sender.py:send():235] send: telemetry
+2022-07-25 00:22:11,285 DEBUG   SenderThread:13208 [sender.py:send():235] send: telemetry
+2022-07-25 00:22:11,571 INFO    Thread-11 :13208 [dir_watcher.py:_on_file_modified():269] file/dir modified: D:\mmt\wandb\run-20220725_002159-hv183ks8\files\output.log
+2022-07-25 00:22:13,590 INFO    Thread-11 :13208 [dir_watcher.py:_on_file_modified():269] file/dir modified: D:\mmt\wandb\run-20220725_002159-hv183ks8\files\output.log
+2022-07-25 00:22:19,633 INFO    Thread-11 :13208 [dir_watcher.py:_on_file_modified():269] file/dir modified: D:\mmt\wandb\run-20220725_002159-hv183ks8\files\output.log
+2022-07-25 00:22:21,646 INFO    Thread-11 :13208 [dir_watcher.py:_on_file_modified():269] file/dir modified: D:\mmt\wandb\run-20220725_002159-hv183ks8\files\output.log
+2022-07-25 00:22:22,756 DEBUG   HandlerThread:13208 [handler.py:handle_request():141] handle_request: stop_status
+2022-07-25 00:22:22,757 DEBUG   SenderThread:13208 [sender.py:send_request():249] send_request: stop_status
+2022-07-25 00:22:31,616 DEBUG   SenderThread:13208 [sender.py:send():235] send: stats
+2022-07-25 00:22:32,704 INFO    Thread-11 :13208 [dir_watcher.py:_on_file_modified():269] file/dir modified: D:\mmt\wandb\run-20220725_002159-hv183ks8\files\config.yaml
+2022-07-25 00:22:37,941 DEBUG   HandlerThread:13208 [handler.py:handle_request():141] handle_request: stop_status
+2022-07-25 00:22:37,941 DEBUG   SenderThread:13208 [sender.py:send_request():249] send_request: stop_status
+2022-07-25 00:22:53,125 DEBUG   HandlerThread:13208 [handler.py:handle_request():141] handle_request: stop_status
+2022-07-25 00:22:53,125 DEBUG   SenderThread:13208 [sender.py:send_request():249] send_request: stop_status
+2022-07-25 00:23:03,599 DEBUG   SenderThread:13208 [sender.py:send():235] send: stats
+2022-07-25 00:23:07,889 INFO    Thread-11 :13208 [dir_watcher.py:_on_file_modified():269] file/dir modified: D:\mmt\wandb\run-20220725_002159-hv183ks8\files\output.log
+2022-07-25 00:23:08,309 DEBUG   HandlerThread:13208 [handler.py:handle_request():141] handle_request: stop_status
+2022-07-25 00:23:08,310 DEBUG   SenderThread:13208 [sender.py:send_request():249] send_request: stop_status
+2022-07-25 00:23:23,477 DEBUG   HandlerThread:13208 [handler.py:handle_request():141] handle_request: stop_status
+2022-07-25 00:23:23,478 DEBUG   SenderThread:13208 [sender.py:send_request():249] send_request: stop_status
+2022-07-25 00:23:35,575 DEBUG   SenderThread:13208 [sender.py:send():235] send: stats
+2022-07-25 00:23:38,662 DEBUG   HandlerThread:13208 [handler.py:handle_request():141] handle_request: stop_status
+2022-07-25 00:23:38,662 DEBUG   SenderThread:13208 [sender.py:send_request():249] send_request: stop_status
+2022-07-25 00:23:52,136 INFO    Thread-11 :13208 [dir_watcher.py:_on_file_modified():269] file/dir modified: D:\mmt\wandb\run-20220725_002159-hv183ks8\files\output.log
+2022-07-25 00:23:53,860 DEBUG   HandlerThread:13208 [handler.py:handle_request():141] handle_request: stop_status
+2022-07-25 00:23:53,860 DEBUG   SenderThread:13208 [sender.py:send_request():249] send_request: stop_status
+2022-07-25 00:24:07,543 DEBUG   SenderThread:13208 [sender.py:send():235] send: stats
+2022-07-25 00:24:09,043 DEBUG   HandlerThread:13208 [handler.py:handle_request():141] handle_request: stop_status
+2022-07-25 00:24:09,043 DEBUG   SenderThread:13208 [sender.py:send_request():249] send_request: stop_status
+2022-07-25 00:24:16,623 WARNING MainThread:13208 [internal.py:wandb_internal():153] Internal process interrupt: 1
+2022-07-25 00:24:16,697 DEBUG   SenderThread:13208 [sender.py:send():235] send: telemetry

@@ -1,0 +1,50 @@
+1
+CUDA: OK
+Start loading the data....
+  - Found cached train data
+  - Found cached valid data
+  - Found cached test data
+<class 'src.dataset.Multimodal_Datasets'>
+Finish loading the data....
+### Note: You are running in unaligned mode.
+test-data-check:
+real_sample:
+real_sample:. done.
+start:
+n_train: 1284
+n_test: 686
+[config]]: {'lr': 0.001, 'optim': 'NAdam', 'num_epochs': 60, 'when': 20, 'nlevels': 5, 'num_heads': 10, 'batch_size': 8, 'clip': 0.8, 'attn_dropout': 0.2, 'out_dropout': 0.1, 'embed_dropout': 0.2}
+[decay]: 20
+[bsz]: 8
+[time-start]: 2022-07-26 13:04:49.945111
+ON Test.
+D:\mmt\modules\position_embedding.py:21: UserWarning: The number of elements in the out tensor of shape [375] is 375 which does not match the computed number of elements 500. Note that this may occur as a result of rounding error. The out tensor will be resized to a tensor of shape (500,). (Triggered internally at  C:\actions-runner\_work\pytorch\pytorch\builder\windows\pytorch\aten\src\ATen\native\cuda\RangeFactories.cu:251.)
+  torch.arange(padding_idx + 1, max_pos, out=getattr(make_positions, buf_name))
+Traceback (most recent call last):
+  File "D:\mmt\main.py", line 269, in <module>
+    test_loss = train.initiate(hyp_params, train_loader, valid_loader, test_loader)
+  File "D:\mmt\src\train.py", line 90, in initiate
+    return train_model(settings, hyp_params, train_loader, valid_loader, test_loader)
+  File "D:\mmt\src\train.py", line 299, in train_model
+    _, results, truths = evaluate(model, ctc_a2l_module, ctc_v2l_module, criterion, test=True)
+  File "D:\mmt\src\train.py", line 250, in evaluate
+    preds, _ = net(text, audio, vision)
+  File "D:\Anaconda\envs\project\lib\site-packages\torch\nn\modules\module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "D:\mmt\src\models.py", line 168, in forward
+    h_a_with_v = self.trans_a_with_v(proj_x_a, proj_x_v, proj_x_v)  # torch.Size([375, 2, 40])
+  File "D:\Anaconda\envs\project\lib\site-packages\torch\nn\modules\module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "D:\mmt\modules\transformer.py", line 83, in forward
+    x = layer(x, x_k, x_v)
+  File "D:\Anaconda\envs\project\lib\site-packages\torch\nn\modules\module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "D:\mmt\modules\transformer.py", line 160, in forward
+    x, _ = self.self_attn(query=x, key=x_k, value=x_v, attn_mask=mask)
+  File "D:\Anaconda\envs\project\lib\site-packages\torch\nn\modules\module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "D:\mmt\modules\multihead_attention.py", line 182, in forward
+    head_weight = self.w_head.reshape(1, -1, 1, 1)
+  File "D:\Anaconda\envs\project\lib\site-packages\torch\nn\modules\module.py", line 1185, in __getattr__
+    raise AttributeError("'{}' object has no attribute '{}'".format(
+AttributeError: 'MultiheadAttention' object has no attribute 'w_head'

@@ -1,0 +1,12 @@
+1
+CUDA: OK
+Start loading the data....
+  - Found cached train data
+Traceback (most recent call last):
+  File "D:\mmt\main.py", line 139, in <module>
+    train_data = get_data(args, dataset, 'train')
+  File "D:\mmt\src\utils.py", line 16, in get_data
+    data = Multimodal_Datasets(args.data_path, dataset, split, args.aligned)
+  File "D:\mmt\src\dataset.py", line 36, in __init__
+    self.text = torch.tensor(bert_embd[split_type].astype(np.float32)).cpu().detach()
+AttributeError: 'Tensor' object has no attribute 'astype'

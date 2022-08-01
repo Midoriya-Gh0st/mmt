@@ -2,6 +2,8 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 from modules.position_embedding import SinusoidalPositionalEmbedding
+from modules.pos_embd import PositionalEncoding
+# from modules.pos_embd import MyPositionalEncoding
 from modules.multihead_attention import MultiheadAttention
 import math
 
@@ -28,7 +30,10 @@ class TransformerEncoder(nn.Module):
         self.embed_dim = embed_dim
         self.embed_scale = math.sqrt(embed_dim)
         self.embed_positions = SinusoidalPositionalEmbedding(embed_dim)
-        
+        # self.embed_positions = PositionalEncoding(embed_dim)
+
+        # print("first embd dim:", embed_dim)
+
         self.attn_mask = attn_mask
 
         self.layers = nn.ModuleList([])
@@ -63,6 +68,10 @@ class TransformerEncoder(nn.Module):
         x = self.embed_scale * x_in
         if self.embed_positions is not None:
             x += self.embed_positions(x_in.transpose(0, 1)[:, :, 0]).transpose(0, 1)   # Add positional embedding
+            # print("is not none.")
+            # x = self.embed_positions(x_in.transpose(0, 1)[:, :, 0]).transpose(0, 1)  # Add positional embedding
+            ...
+
         x = F.dropout(x, p=self.dropout, training=self.training)
 
         if x_in_k is not None and x_in_v is not None:
@@ -72,6 +81,11 @@ class TransformerEncoder(nn.Module):
             if self.embed_positions is not None:
                 x_k += self.embed_positions(x_in_k.transpose(0, 1)[:, :, 0]).transpose(0, 1)   # Add positional embedding
                 x_v += self.embed_positions(x_in_v.transpose(0, 1)[:, :, 0]).transpose(0, 1)   # Add positional embedding
+
+                # x_k = self.embed_positions(x_in_k.transpose(0, 1)[:, :, 0]).transpose(0, 1)  # Add positional embedding
+                # x_v = self.embed_positions(x_in_v.transpose(0, 1)[:, :, 0]).transpose(0, 1)  # Add positional embedding
+                ...
+
             x_k = F.dropout(x_k, p=self.dropout, training=self.training)
             x_v = F.dropout(x_v, p=self.dropout, training=self.training)
         
@@ -93,11 +107,11 @@ class TransformerEncoder(nn.Module):
 
         return x
 
-    def max_positions(self):
-        """Maximum input length supported by the encoder."""
-        if self.embed_positions is None:
-            return self.max_source_positions
-        return min(self.max_source_positions, self.embed_positions.max_positions())
+    # def max_positions(self):
+    #     """Maximum input length supported by the encoder."""
+    #     if self.embed_positions is None:
+    #         return self.max_source_positions
+    #     return min(self.max_source_positions, self.embed_positions.max_positions())
 
 
 class TransformerEncoderLayer(nn.Module):

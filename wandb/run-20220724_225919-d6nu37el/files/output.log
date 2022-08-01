@@ -1,0 +1,44 @@
+1
+CUDA: OK
+Start loading the data....
+  - Found cached train data
+  - Found cached valid data
+  - Found cached test data
+<class 'src.dataset.Multimodal_Datasets'>
+Finish loading the data....
+test-data-check:
+real_sample:
+real_sample:. done.
+start:
+n_train: 1284
+n_test: 686
+dict: {'lr': 0.001, 'optim': 'Adam', 'num_epochs': 150, 'nlevels': 5, 'num_heads': 10, 'batch_size': 16, 'clip': 0.8, 'attn_dropout': 0.2, 'out_dropout': 0.1, 'embed_dropout': 0.2}
+wandb: WARNING Changes to your `wandb` environment variables will be ignored because your `wandb` session has already started. For more information on how to modify your settings with `wandb.init()` arguments, please refer to https://wandb.me/wandb-init.
+Epoch  1 | Batch  30/ 80 | Time/Batch(ms) 1645.68 | Train Loss 1.4116
+Epoch  1 | Batch  60/ 80 | Time/Batch(ms) 1613.40 | Train Loss 1.3411
+--------------------------------------------------
+Epoch  1 | Time 131.0689 sec | Valid Loss 1.3879 | Test Loss 1.2111
+--------------------------------------------------
+Saved model at pre_trained_models/mult.pt!
+Epoch  2 | Batch  30/ 80 | Time/Batch(ms) 1644.59 | Train Loss 1.1199
+Epoch  2 | Batch  60/ 80 | Time/Batch(ms) 1528.09 | Train Loss 1.2095
+--------------------------------------------------
+Epoch  2 | Time 130.5269 sec | Valid Loss 1.4700 | Test Loss 1.7354
+--------------------------------------------------
+Epoch  3 | Batch  30/ 80 | Time/Batch(ms) 1586.64 | Train Loss 1.0698
+Epoch  3 | Batch  60/ 80 | Time/Batch(ms) 1576.33 | Train Loss 1.0577
+--------------------------------------------------
+Epoch  3 | Time 128.5090 sec | Valid Loss 1.1868 | Test Loss 1.1276
+--------------------------------------------------
+Saved model at pre_trained_models/mult.pt!
+Epoch  4 | Batch  30/ 80 | Time/Batch(ms) 1575.60 | Train Loss 0.9477
+Epoch  4 | Batch  60/ 80 | Time/Batch(ms) 1517.95 | Train Loss 1.0059
+--------------------------------------------------
+Epoch  4 | Time 125.6410 sec | Valid Loss 1.0173 | Test Loss 1.0396
+--------------------------------------------------
+Saved model at pre_trained_models/mult.pt!
+Epoch  5 | Batch  30/ 80 | Time/Batch(ms) 1614.03 | Train Loss 0.8098
+Epoch  5 | Batch  60/ 80 | Time/Batch(ms) 1526.38 | Train Loss 0.8736
+--------------------------------------------------
+Epoch  5 | Time 126.1918 sec | Valid Loss 1.0285 | Test Loss 0.9958
+--------------------------------------------------

@@ -1,0 +1,18 @@
+1
+CUDA: OK
+Start loading the data....
+  - Found cached train data
+Traceback (most recent call last):
+  File "D:\mmt\main.py", line 139, in <module>
+    train_data = get_data(args, dataset, 'train')
+  File "D:\mmt\src\utils.py", line 16, in get_data
+    data = Multimodal_Datasets(args.data_path, dataset, split, args.aligned)
+  File "D:\mmt\src\dataset.py", line 35, in __init__
+    text_bert = torch.load(bert_file)
+  File "D:\Anaconda\envs\project\lib\site-packages\torch\serialization.py", line 699, in load
+    with _open_file_like(f, 'rb') as opened_file:
+  File "D:\Anaconda\envs\project\lib\site-packages\torch\serialization.py", line 231, in _open_file_like
+    return _open_file(name_or_buffer, mode)
+  File "D:\Anaconda\envs\project\lib\site-packages\torch\serialization.py", line 212, in __init__
+    super(_open_file, self).__init__(open(name, mode))
+FileNotFoundError: [Errno 2] No such file or directory: '../data/mosi_embd_bert.pkl'

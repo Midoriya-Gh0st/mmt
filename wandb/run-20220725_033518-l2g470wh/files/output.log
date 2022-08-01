@@ -1,0 +1,6 @@
+1
+CUDA: OK
+Start loading the data....
+  - Found cached train data
+[og-text]: torch.Size([1284, 50, 300])
+[bert-shape]: torch.Size([1284, 50, 768])

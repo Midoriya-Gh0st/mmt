@@ -22,16 +22,20 @@ class Multimodal_Datasets(Dataset):
         dataset_path = os.path.join(dataset_path, data+'_data.pkl' if if_align else data+'_data_noalign.pkl' )
         dataset = pickle.load(open(dataset_path, 'rb'))
 
+        clip = 1
+        data_len = len(dataset[split_type]['vision'])
+        temp_len = data_len // clip
+
         # These are torch tensors
-        self.vision = torch.tensor(dataset[split_type]['vision'].astype(np.float32)).cpu().detach()
-        self.text = torch.tensor(dataset[split_type]['text'].astype(np.float32)).cpu().detach()
-        self.audio = dataset[split_type]['audio'].astype(np.float32)
+        self.vision = torch.tensor(dataset[split_type]['vision'].astype(np.float32)).cpu().detach()[:temp_len]
+        self.text = torch.tensor(dataset[split_type]['text'].astype(np.float32)).cpu().detach()[:temp_len]
+        self.audio = dataset[split_type]['audio'].astype(np.float32)[:temp_len]
         self.audio[self.audio == -np.inf] = 0
         self.audio = torch.tensor(self.audio).cpu().detach()
-        self.labels = torch.tensor(dataset[split_type]['labels'].astype(np.float32)).cpu().detach()
+        self.labels = torch.tensor(dataset[split_type]['labels'].astype(np.float32)).cpu().detach()[:temp_len]
         
         # Note: this is STILL an numpy array
-        self.meta = dataset[split_type]['id'] if 'id' in dataset[split_type].keys() else None
+        self.meta = dataset[split_type]['id'][:temp_len] if 'id' in dataset[split_type].keys() else None
        
         self.data = data
         
