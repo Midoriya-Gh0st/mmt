@@ -38,7 +38,8 @@ def model_stat(m):
 
     def print_params():
         for name, parameters in m.named_parameters():
-            print(name, ':', parameters.size())
+            # print(name, ':', parameters.size())
+            print(name, ':', parameters.numel())
 
     def get_parameter_number():
         total_num = sum(p.numel() for p in m.parameters())
@@ -48,6 +49,7 @@ def model_stat(m):
     print("[Model Size.]")
     size = get_parameter_number()
     print(size)
+    print_params()
     input("done.")
     # -----------------
 

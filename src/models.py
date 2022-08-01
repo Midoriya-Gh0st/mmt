@@ -38,21 +38,16 @@ class MULTModel(nn.Module):
         output_dim = hyp_params.output_dim        # This is actually not a hyperparameter :-)
 
         # 1. Temporal convolutional layers
-        self.proj_l = nn.Conv1d(self.orig_d_l, self.d_l, kernel_size=1, padding=0, bias=False)
+        # 下面传入: torch.Size([64, 300, 50])
+        self.proj_l = nn.LSTM(input_size=self.orig_d_l, hidden_size=self.d_l, bias=False, dropout=0.1, bidirectional=False, batch_first=True)
         self.proj_a = nn.Conv1d(self.orig_d_a, self.d_a, kernel_size=1, padding=0, bias=False)
         self.proj_v = nn.Conv1d(self.orig_d_v, self.d_v, kernel_size=1, padding=0, bias=False)
 
-        # 2. Crossmodal Attentions
-        if self.lonly:
-            self.trans_l_with_a = self.get_network(self_type='la')
-            self.trans_l_with_v = self.get_network(self_type='lv')
-        if self.aonly:
-            self.trans_a_with_l = self.get_network(self_type='al')
-            self.trans_a_with_v = self.get_network(self_type='av')
-        if self.vonly:
-            self.trans_v_with_l = self.get_network(self_type='vl')
-            self.trans_v_with_a = self.get_network(self_type='va')
-        
+        # layer norm for L, batch norm for A/V:
+        self.bn_a = nn.BatchNorm1d(num_features=self.d_a)
+        self.bn_v = nn.BatchNorm1d(num_features=self.d_v)
+        self.ln_l = nn.LayerNorm(self.d_l)
+
         # 3. Self Attentions (Could be replaced by LSTMs, GRUs, etc.)
         #    [e.g., self.trans_x_mem = nn.LSTM(self.d_x, self.d_x, 1)
         self.trans_l_mem = self.get_network(self_type='l_mem', layers=3)
@@ -94,50 +89,35 @@ class MULTModel(nn.Module):
         text, audio, and vision should have dimension [batch_size, seq_len, n_features]
         """
         x_l = F.dropout(x_l.transpose(1, 2), p=self.embed_dropout, training=self.training)
+        print(x_l.shape)
+        input()
         x_a = x_a.transpose(1, 2)
         x_v = x_v.transpose(1, 2)
        
         # Project the textual/visual/audio features
-        proj_x_l = x_l if self.orig_d_l == self.d_l else self.proj_l(x_l)
+
+        proj_x_l, _ = x_l if self.orig_d_l == self.d_l else self.proj_l(x_l)
         proj_x_a = x_a if self.orig_d_a == self.d_a else self.proj_a(x_a)
         proj_x_v = x_v if self.orig_d_v == self.d_v else self.proj_v(x_v)
+
+        proj_x_l = self.ln_l(proj_x_l)
+        proj_x_a = self.bn_a(proj_x_a)
+        proj_x_v = self.bn_a(proj_x_v)
+
         proj_x_a = proj_x_a.permute(2, 0, 1)
         proj_x_v = proj_x_v.permute(2, 0, 1)
         proj_x_l = proj_x_l.permute(2, 0, 1)
 
-        if self.lonly:
-            # (V,A) --> L
-            h_l_with_as = self.trans_l_with_a(proj_x_l, proj_x_a, proj_x_a)    # Dimension (L, N, d_l)
-            h_l_with_vs = self.trans_l_with_v(proj_x_l, proj_x_v, proj_x_v)    # Dimension (L, N, d_l)
-            h_ls = torch.cat([h_l_with_as, h_l_with_vs], dim=2)
-            h_ls = self.trans_l_mem(h_ls)
-            if type(h_ls) == tuple:
-                h_ls = h_ls[0]
-            last_h_l = last_hs = h_ls[-1]   # Take the last output for prediction
+        # Audio, Visual:
+        h_a = self.trans_a_mem(proj_x_a)
+        h_v = self.trans_v_mem(proj_x_v)
+        last_h_a = h_a[-1]
+        last_h_v = h_v[-1]
 
-        if self.aonly:
-            # (L,V) --> A
-            h_a_with_ls = self.trans_a_with_l(proj_x_a, proj_x_l, proj_x_l)
-            h_a_with_vs = self.trans_a_with_v(proj_x_a, proj_x_v, proj_x_v)
-            h_as = torch.cat([h_a_with_ls, h_a_with_vs], dim=2)
-            h_as = self.trans_a_mem(h_as)
-            if type(h_as) == tuple:
-                h_as = h_as[0]
-            last_h_a = last_hs = h_as[-1]
+        l_with_a_v = proj_x_l + last_h_a + last_h_v
+        h_l = self.trans_l_mem(l_with_a_v)
+        last_hs = h_l[-1]  # Take the last output for prediction
 
-        if self.vonly:
-            # (L,A) --> V
-            h_v_with_ls = self.trans_v_with_l(proj_x_v, proj_x_l, proj_x_l)
-            h_v_with_as = self.trans_v_with_a(proj_x_v, proj_x_a, proj_x_a)
-            h_vs = torch.cat([h_v_with_ls, h_v_with_as], dim=2)
-            h_vs = self.trans_v_mem(h_vs)
-            if type(h_vs) == tuple:
-                h_vs = h_vs[0]
-            last_h_v = last_hs = h_vs[-1]
-        
-        if self.partial_mode == 3:
-            last_hs = torch.cat([last_h_l, last_h_a, last_h_v], dim=1)
-        
         # A residual block
         last_hs_proj = self.proj2(F.dropout(F.relu(self.proj1(last_hs)), p=self.out_dropout, training=self.training))
         last_hs_proj += last_hs
