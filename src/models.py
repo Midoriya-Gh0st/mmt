@@ -31,7 +31,7 @@ class MULTModel(nn.Module):
 
         """ Modal weight """
         # emph layer weight
-        self.w_emph_t = P.Parameter(torch.ones(2), requires_grad=True)       # for Text-with[A, V]
+        self.w_emph_t = [1, 1]  # P.Parameter(torch.ones(2), requires_grad=True)       # for Text-with[A, V]
         self.w_emph_v = P.Parameter(torch.ones(2), requires_grad=True)       # for Visual-with-[L, A]
         self.w_emph_a = P.Parameter(torch.ones(2), requires_grad=True)       # for Audio-with-[V, A]
 
@@ -87,14 +87,19 @@ class MULTModel(nn.Module):
         BD = True  # is_bidirectional? # 设置成True, 后面会有 40*2=80, 还是应该取后面[:40]?
         # seq_len 不包含在内
         out_size = 40
-        BIAS = True  # is_bias_open?
         if self.rnn_bi == 1:  # uni-rnn
             # out_size = 40
             BD = False
 
-        self.proj_l = nn.GRU(self.orig_d_l, out_size, num_layers, dropout=0, bidirectional=BD, bias=BIAS, batch_first=True)  # 需求: [input_size, h_size, num_layers]
-        self.proj_a = nn.GRU(self.orig_d_a, out_size, num_layers, dropout=0, bidirectional=BD, bias=BIAS, batch_first=True)  #
-        self.proj_v = nn.GRU(self.orig_d_v, out_size, num_layers, dropout=0, bidirectional=BD, bias=BIAS, batch_first=True)  # default-setting
+        if hyp_params.bias == 'yes':
+            self.bias = True
+        elif hyp_params.bias == 'no':
+            self.bias = False
+        BIAS = self.bias  # is_bias_open?
+
+        self.proj_l = nn.GRU(self.orig_d_l, out_size, num_layers, dropout=hyp_params.rdp, bidirectional=BD, bias=BIAS, batch_first=True)  # 需求: [input_size, h_size, num_layers]
+        self.proj_a = nn.GRU(self.orig_d_a, out_size, num_layers, dropout=hyp_params.rdp, bidirectional=BD, bias=BIAS, batch_first=True)  #
+        self.proj_v = nn.GRU(self.orig_d_v, out_size, num_layers, dropout=hyp_params.rdp, bidirectional=BD, bias=BIAS, batch_first=True)  # default-setting
 
         # 2. Crossmodal Attentions
 

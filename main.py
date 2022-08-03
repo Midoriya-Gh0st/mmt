@@ -48,7 +48,8 @@ parser.add_argument('--kernel_size', type=str, default='1-1-1',
 parser.add_argument("--rnn_bi", type=int, default=2)
 parser.add_argument("--use_ln", type=str, default='yes')
 parser.add_argument("--use_bn", type=str, default='yes')
-
+parser.add_argument("--rdp", type=float, default=0.0)
+parser.add_argument("--bias", type=str, default='yes')
 
 # Tasks
 parser.add_argument('--vonly', action='store_true',
@@ -229,6 +230,8 @@ hyp_params.kernels = [int(i) for i in args.kernel_size.split('-')]
 hyp_params.rnn_bi = args.rnn_bi
 hyp_params.use_ln = args.use_ln
 hyp_params.use_bn = args.use_bn
+hyp_params.rdp = args.rdp
+hyp_params.bias = args.bias
 print("Kernel:", hyp_params.kernels)
 
 print("n_train:", hyp_params.n_train)
@@ -258,6 +261,8 @@ if __name__ == '__main__':
         use_ln=hyp_params.use_ln,
         use_bn=hyp_params.use_bn,
         rnn_bi=hyp_params.rnn_bi,
+        rdp=hyp_params.rdp,
+        bias=hyp_params.bias,
     )
 
     # wandb.init(config=hypar_defaults)
