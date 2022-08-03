@@ -1,4 +1,4 @@
-
+wandb
 *.pkl
 *.dt
 data/Archive.zip
