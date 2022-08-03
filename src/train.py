@@ -1,3 +1,5 @@
+import datetime
+
 import torch
 from torch import nn
 import sys
@@ -17,8 +19,6 @@ from sklearn.metrics import precision_recall_fscore_support
 from sklearn.metrics import accuracy_score, f1_score
 from src.eval_metrics import *
 
-ON_TEST = 1
-
 
 ####################################################################
 #
@@ -33,11 +33,37 @@ def get_CTC_module(hyp_params):
     return a2l_module, v2l_module
 
 
+def model_stat(m):
+    """ Model Statistics """
+    print("[Model stat:]")
+
+    def print_params():
+        for name, parameters in m.named_parameters():
+            # print(name, ':', parameters.size())
+            print(name, ':', parameters.numel())
+            # print(name, ':', parameters)
+
+    def get_parameter_number():
+        total_num = sum(p.numel() for p in m.parameters())
+        trainable_num = sum(p.numel() for p in m.parameters() if p.requires_grad)
+        return {'Total': total_num, 'Trainable': trainable_num}
+
+    print("[Model Size.]")
+    size = get_parameter_number()
+    print(size)
+    print_params()
+    input("done.")
+    # -----------------
+
+
 def initiate(hyp_params, train_loader, valid_loader, test_loader):
     model = getattr(models, hyp_params.model + 'Model')(hyp_params)
 
     if hyp_params.use_cuda:
         model = model.cuda()
+
+    """ Model Params Stat. """
+    # model_stat(model)
 
     optimizer = getattr(optim, hyp_params.optim)(model.parameters(), lr=hyp_params.lr)
     criterion = getattr(nn, hyp_params.criterion)()
@@ -72,6 +98,7 @@ def initiate(hyp_params, train_loader, valid_loader, test_loader):
 # Training and evaluation scripts
 #
 ####################################################################
+
 
 def train_model(settings, hyp_params, train_loader, valid_loader, test_loader):
     model = settings['model']
@@ -114,7 +141,7 @@ def train_model(settings, hyp_params, train_loader, valid_loader, test_loader):
             batch_size = text.size(0)
             batch_chunk = hyp_params.batch_chunk
 
-            ######## CTC STARTS ######## Do not worry about this if not working on CTC
+            """ CTC STARTS # Do not worry about this if not working on CTC """
             if ctc_criterion is not None:
                 ctc_a2l_net = nn.DataParallel(ctc_a2l_module) if batch_size > 10 else ctc_a2l_module
                 ctc_v2l_net = nn.DataParallel(ctc_v2l_module) if batch_size > 10 else ctc_v2l_module
@@ -138,7 +165,7 @@ def train_model(settings, hyp_params, train_loader, valid_loader, test_loader):
                 ctc_loss = ctc_loss.cuda() if hyp_params.use_cuda else ctc_loss
             else:
                 ctc_loss = 0
-            ######## CTC ENDS ########
+            """ CTC ENDS """
 
             combined_loss = 0
             net = nn.DataParallel(model) if batch_size > 10 else model
@@ -237,7 +264,7 @@ def train_model(settings, hyp_params, train_loader, valid_loader, test_loader):
         truths = torch.cat(truths)
         return avg_loss, results, truths
 
-    if not ON_TEST:
+    if not hyp_params.et == 'test':
         best_valid = 1e8
         for epoch in range(1, hyp_params.num_epochs + 1):
             start = time.time()
@@ -254,21 +281,32 @@ def train_model(settings, hyp_params, train_loader, valid_loader, test_loader):
             print("-" * 50)
 
             if val_loss < best_valid:
-                print(f"Saved model at pre_trained_models/{hyp_params.name}.pt!")
-                save_model(hyp_params, model, name=hyp_params.name)
+                print(f"Saved model at pre_trained_models/{hyp_params.name}_{epoch}.pt!")
+                model_file = f"{hyp_params.name}_{epoch}"
+                save_model(hyp_params, model, name=model_file)
                 best_valid = val_loss
+
+                # TODO: check each model output - 每次都检查.
+                _, results, truths = evaluate(model, ctc_a2l_module, ctc_v2l_module, criterion, test=True)
+                if hyp_params.dataset == "mosei_senti":
+                    eval_mosei_senti(results, truths, True)
+                elif hyp_params.dataset == 'mosi':
+                    eval_mosi(results, truths, True)
+                elif hyp_params.dataset == 'iemocap':
+                    eval_iemocap(results, truths)
     else:
         print("ON Test.")
 
-    model = load_model(hyp_params, name=hyp_params.name)
-    _, results, truths = evaluate(model, ctc_a2l_module, ctc_v2l_module, criterion, test=True)
-
-    if hyp_params.dataset == "mosei_senti":
-        eval_mosei_senti(results, truths, True)
-    elif hyp_params.dataset == 'mosi':
-        eval_mosi(results, truths, True)
-    elif hyp_params.dataset == 'iemocap':
-        eval_iemocap(results, truths)
+    # model = load_model(hyp_params, name=hyp_params.name)
+    # _, results, truths = evaluate(model, ctc_a2l_module, ctc_v2l_module, criterion, test=True)
+    #
+    # if hyp_params.dataset == "mosei_senti":
+    #     eval_mosei_senti(results, truths, True)
+    # elif hyp_params.dataset == 'mosi':
+    #     eval_mosi(results, truths, True)
+    # elif hyp_params.dataset == 'iemocap':
+    #     eval_iemocap(results, truths)
 
     sys.stdout.flush()
-    input('[Press Any Key to start another run]')
+    print("[time-end]:", datetime.datetime.now())
+    # input('[Press Any Key to start another run]')
