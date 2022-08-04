@@ -76,9 +76,9 @@ class MULTModel(nn.Module):
         output_dim = hyp_params.output_dim  # This is actually not a hyperparameter :-)
 
         # 1. Temporal convolutional layers
-        # self.proj_l = nn.Conv1d(self.orig_d_l, self.d_l, kernel_size=self.kernel[0], padding=0, bias=False)
-        # self.proj_a = nn.Conv1d(self.orig_d_a, self.d_a, kernel_size=self.kernel[1], padding=0, bias=False)
-        # self.proj_v = nn.Conv1d(self.orig_d_v, self.d_v, kernel_size=self.kernel[2], padding=0, bias=False)
+        self.proj_l = nn.Conv1d(self.orig_d_l, self.d_l, kernel_size=1, padding=0, bias=False)
+        self.proj_a = nn.Conv1d(self.orig_d_a, self.d_a, kernel_size=1, padding=0, bias=False)
+        self.proj_v = nn.Conv1d(self.orig_d_v, self.d_v, kernel_size=1, padding=0, bias=False)
 
         """ ---------------------------- """
         """ GRU """
@@ -97,9 +97,10 @@ class MULTModel(nn.Module):
             self.bias = False
         BIAS = self.bias  # is_bias_open?
 
-        self.proj_l = nn.GRU(self.orig_d_l, out_size, num_layers, dropout=hyp_params.rdp, bidirectional=BD, bias=BIAS, batch_first=True)  # 需求: [input_size, h_size, num_layers]
-        self.proj_a = nn.GRU(self.orig_d_a, out_size, num_layers, dropout=hyp_params.rdp, bidirectional=BD, bias=BIAS, batch_first=True)  #
-        self.proj_v = nn.GRU(self.orig_d_v, out_size, num_layers, dropout=hyp_params.rdp, bidirectional=BD, bias=BIAS, batch_first=True)  # default-setting
+        # TODO: 如果不用前置CNN, 则这里为self.d_l, 否则为 self.orig_d_l;
+        self.gru_l = nn.GRU(self.d_l, out_size, num_layers, dropout=hyp_params.rdp, bidirectional=BD, bias=BIAS, batch_first=True)  # 需求: [input_size, h_size, num_layers]
+        self.gru_a = nn.GRU(self.d_a, out_size, num_layers, dropout=hyp_params.rdp, bidirectional=BD, bias=BIAS, batch_first=True)  #
+        self.gru_v = nn.GRU(self.d_v, out_size, num_layers, dropout=hyp_params.rdp, bidirectional=BD, bias=BIAS, batch_first=True)  # default-setting
 
         # 2. Crossmodal Attentions
 
@@ -162,9 +163,17 @@ class MULTModel(nn.Module):
         len_v = x_v.shape[1]
 
         # Project the textual/visual/audio features
-        proj_x_l, _ = self.proj_l(x_l)
-        proj_x_a, _ = self.proj_a(x_a)
-        proj_x_v, _ = self.proj_v(x_v)
+        # for conv1d, the input: [N, C_in, L], output: [N, C_out, L]
+        # input(x_l.shape)  # [16, 50, 300]
+        proj_x_l = self.proj_l(x_l.transpose(1, 2)).transpose(1, 2)
+        proj_x_a = self.proj_a(x_a.transpose(1, 2)).transpose(1, 2)
+        proj_x_v = self.proj_v(x_v.transpose(1, 2)).transpose(1, 2)
+
+        # # GRU
+        proj_x_l, _ = self.gru_l(proj_x_l)
+        proj_x_a, _ = self.gru_a(proj_x_a)
+        proj_x_v, _ = self.gru_v(proj_x_v)
+
         # print(f"[-1-]: {proj_x_l.shape, proj_x_a.shape, proj_x_v.shape}")  # [16, 50, 40*2]  # batch-first in bi-GRU.
         if self.rnn_bi == 2:
             # print(proj_x_l.shape)
@@ -186,10 +195,11 @@ class MULTModel(nn.Module):
             proj_x_v = self.ln_v(proj_x_v)
         # print("2:")
         # input(proj_x_a.shape)
+
         proj_x_a = proj_x_a.permute(1, 0, 2)
         proj_x_v = proj_x_v.permute(1, 0, 2)
         proj_x_l = proj_x_l.permute(1, 0, 2)
-        # input(f"[-2-]: {proj_x_l.shape, proj_x_a.shape, proj_x_v.shape}")
+        # input(f"[-2-]: {proj_x_l.shape, proj_x_a.shape, proj_x_v.shape}")  # [40, 16, 50])
 
         if self.lonly:
             """ Text & [Audio + Visual] """
