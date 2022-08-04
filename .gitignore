@@ -1,4 +1,5 @@
 wandb
+pre_trained_models
 *.pkl
 *.dt
 data/Archive.zip
