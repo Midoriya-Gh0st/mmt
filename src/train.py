@@ -249,6 +249,8 @@ def train_model(settings, hyp_params, train_loader, valid_loader, test_loader):
 
                 net = nn.DataParallel(model) if batch_size > 10 else model
                 preds, _ = net(text, audio, vision)
+                # print("preds")
+                # input(preds)
                 if hyp_params.dataset == 'iemocap':
                     preds = preds.view(-1, 2)
                     eval_attr = eval_attr.view(-1)
@@ -270,15 +272,22 @@ def train_model(settings, hyp_params, train_loader, valid_loader, test_loader):
             start = time.time()
             train(model, optimizer, criterion, ctc_a2l_module, ctc_v2l_module, ctc_a2l_optimizer, ctc_v2l_optimizer, ctc_criterion)
             val_loss, _, _ = evaluate(model, ctc_a2l_module, ctc_v2l_module, criterion, test=False)
-            test_loss, _, _ = evaluate(model, ctc_a2l_module, ctc_v2l_module, criterion, test=True)
+            test_loss, results, truths = evaluate(model, ctc_a2l_module, ctc_v2l_module, criterion, test=True)
 
             end = time.time()
             duration = end - start
             scheduler.step(val_loss)  # Decay learning rate by validation loss
 
-            print("-" * 50)
-            print('Epoch {:2d} | Time {:5.4f} sec | Valid Loss {:5.4f} | Test Loss {:5.4f}'.format(epoch, duration, val_loss, test_loss))
-            print("-" * 50)
+            # print("-" * 50)
+            # print('Epoch {:2d} | Time {:5.4f} sec | Valid Loss {:5.4f} | Test Loss {:5.4f}'.format(epoch, duration, val_loss, test_loss))
+            # print("-" * 50)
+
+            if hyp_params.dataset == 'iemocap':
+                print(len(eval_iemocap(results, truths)))
+                f1, acc, _ = eval_iemocap(results, truths)
+                print("-" * 50)
+                print('Epoch {:2d} | Time {:5.4f} sec | Valid Loss {:5.4f} | Test Loss {:5.4f} | f1 {} | acc {}'.format(epoch, duration, val_loss, test_loss, f1, acc))
+                print("-" * 50)
 
             if val_loss < best_valid:
                 print(f"Saved model at pre_trained_models/{hyp_params.name}_{epoch}.pt!")
