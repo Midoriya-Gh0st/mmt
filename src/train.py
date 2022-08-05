@@ -283,7 +283,7 @@ def train_model(settings, hyp_params, train_loader, valid_loader, test_loader):
             if val_loss < best_valid:
                 print(f"Saved model at pre_trained_models/{hyp_params.name}_{epoch}.pt!")
                 model_file = f"{hyp_params.name}_{epoch}"
-                save_model(hyp_params, model, name=model_file)
+                # save_model(hyp_params, model, name=model_file)
                 best_valid = val_loss
 
                 # TODO: check each model output - 每次都检查.
