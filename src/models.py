@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 from torch import nn
 import torch.nn.functional as F
@@ -26,7 +27,7 @@ class MULTModel(nn.Module):
         self.out_dropout = hyp_params.out_dropout
         self.embed_dropout = hyp_params.embed_dropout
         self.attn_mask = hyp_params.attn_mask
-        # self.kernel = hyp_params.kernels
+        self.kernels = hyp_params.kernels
         self.bsz = hyp_params.batch_size
 
         """ Modal weight """
@@ -51,6 +52,12 @@ class MULTModel(nn.Module):
         self.ln_a = nn.LayerNorm(self.d_a)
         self.ln_v = nn.LayerNorm(self.d_v)
         self.bn = nn.BatchNorm1d(num_features=self.d_l * 4)
+        self.bn_l = nn.BatchNorm1d(self.d_l)
+        self.bn_a = nn.BatchNorm1d(self.d_a)
+        self.bn_v = nn.BatchNorm1d(self.d_v)
+
+        self.prob = P.Parameter(torch.ones(3), requires_grad=True)
+        self.m_gate = torch.softmax(self.prob, dim=0)  # [L, A, V]
 
         # bias?
         # self.b_a_v = nn.parameter.Parameter(torch.zeros(1), requires_grad=True)
@@ -76,9 +83,9 @@ class MULTModel(nn.Module):
         output_dim = hyp_params.output_dim  # This is actually not a hyperparameter :-)
 
         # 1. Temporal convolutional layers
-        self.proj_l = nn.Conv1d(self.orig_d_l, self.d_l, kernel_size=1, padding=0, bias=False)
-        self.proj_a = nn.Conv1d(self.orig_d_a, self.d_a, kernel_size=1, padding=0, bias=False)
-        self.proj_v = nn.Conv1d(self.orig_d_v, self.d_v, kernel_size=1, padding=0, bias=False)
+        self.proj_l = nn.Conv1d(self.orig_d_l, self.d_l, kernel_size=self.kernels[0], padding=0, bias=False)
+        self.proj_a = nn.Conv1d(self.orig_d_a, self.d_a, kernel_size=self.kernels[0], padding=0, bias=False)
+        self.proj_v = nn.Conv1d(self.orig_d_v, self.d_v, kernel_size=self.kernels[0], padding=0, bias=False)
 
         """ ---------------------------- """
         """ GRU """
@@ -165,9 +172,18 @@ class MULTModel(nn.Module):
         # Project the textual/visual/audio features
         # for conv1d, the input: [N, C_in, L], output: [N, C_out, L]
         # input(x_l.shape)  # [16, 50, 300]
-        proj_x_l = self.proj_l(x_l.transpose(1, 2)).transpose(1, 2)
-        proj_x_a = self.proj_a(x_a.transpose(1, 2)).transpose(1, 2)
-        proj_x_v = self.proj_v(x_v.transpose(1, 2)).transpose(1, 2)
+        proj_x_l = self.proj_l(x_l.transpose(1, 2))
+        proj_x_a = self.proj_a(x_a.transpose(1, 2))
+        proj_x_v = self.proj_v(x_v.transpose(1, 2))
+
+        # TODO: 尝试在GRU之前使用[BN+激活函数];
+        if self.use_bn == 'yes':
+            proj_x_l = self.bn_l(proj_x_l).transpose(1, 2)
+            proj_x_a = self.bn_a(proj_x_a).transpose(1, 2)
+            proj_x_v = self.bn_v(proj_x_v).transpose(1, 2)
+        proj_x_l = torch.tanh(proj_x_l)
+        proj_x_a = torch.tanh(proj_x_a)
+        proj_x_v = torch.tanh(proj_x_v)
 
         # # GRU
         proj_x_l, _ = self.gru_l(proj_x_l)
@@ -201,6 +217,20 @@ class MULTModel(nn.Module):
         proj_x_l = proj_x_l.permute(1, 0, 2)
         # input(f"[-2-]: {proj_x_l.shape, proj_x_a.shape, proj_x_v.shape}")  # [40, 16, 50])
 
+        """ Multi-Gate """
+        # self.m_gate = torch.softmax(self.prob, dim=0)  # [L, A, V]
+        domain_modal = torch.argmax(self.m_gate)
+        if domain_modal == 0:  # L
+            ...
+        elif domain_modal == 1:
+            temp = proj_x_l
+            proj_x_l = proj_x_a
+            proj_x_a = temp
+        else:
+            temp = proj_x_l
+            proj_x_l = proj_x_v
+            proj_x_v = temp
+
         if self.lonly:
             """ Text & [Audio + Visual] """
             # audio:
@@ -227,8 +257,8 @@ class MULTModel(nn.Module):
 
         # A residual block
         x1 = self.proj1(last_h)
-        if self.use_bn == 'yes':
-            x1 = self.bn(x1)
+        # if self.use_bn == 'yes':
+        #     x1 = self.bn(x1)
 
         last_hs_proj = self.proj2(F.dropout(F.relu(x1), p=self.out_dropout, training=self.training))
         last_hs_proj += last_h
