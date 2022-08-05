@@ -45,11 +45,11 @@ parser.add_argument('--kernel_size', type=str, default='1-1-1',
                     help='kernel size of [T, A, V]')
 
 # my-tune.
-parser.add_argument("--rnn_bi", type=int, default=2)
-parser.add_argument("--use_ln", type=str, default='yes')
-parser.add_argument("--use_bn", type=str, default='yes')
+parser.add_argument("--rnn_bi", type=int, default=1)
+parser.add_argument("--use_ln", type=str, default='no')
+parser.add_argument("--use_bn", type=str, default='no')
 parser.add_argument("--rdp", type=float, default=0.0)
-parser.add_argument("--bias", type=str, default='yes')
+parser.add_argument("--bias", type=str, default='no')
 
 # Tasks
 parser.add_argument('--vonly', action='store_true',
@@ -60,7 +60,7 @@ parser.add_argument('--lonly', action='store_true',
                     help='use the crossmodal fusion into l (default: False)')
 parser.add_argument('--aligned', action='store_true',
                     help='consider aligned experiment or not (default: False)')
-parser.add_argument('--dataset', type=str, default='mosi',  # mosei_senti
+parser.add_argument('--dataset', type=str, default='iemocap',  # mosei_senti
                     help='dataset to use (default: mosei_senti)')
 parser.add_argument('--data_path', type=str, default='data',
                     help='path for storing the dataset')
