@@ -19,23 +19,50 @@ else:
 class Multimodal_Datasets(Dataset):
     def __init__(self, dataset_path, data='mosei_senti', split_type='train', if_align=False):
         super(Multimodal_Datasets, self).__init__()
-        dataset_path = os.path.join(dataset_path, data+'_data.pkl' if if_align else data+'_data_noalign.pkl' )
+        # print(dataset_path)
+        # input()
+        dataset_path = os.path.join(dataset_path, data+'_data.pkl' if if_align else data+'_data_noalign.pkl')
         dataset = pickle.load(open(dataset_path, 'rb'))
 
+        clip = 5
+        length = dataset[split_type]['labels'].shape[0] // clip
+        # input(length)
+
         # These are torch tensors
-        self.vision = torch.tensor(dataset[split_type]['vision'].astype(np.float32)).cpu().detach()
-        self.text = torch.tensor(dataset[split_type]['text'].astype(np.float32)).cpu().detach()
-        self.audio = dataset[split_type]['audio'].astype(np.float32)
+        self.vision = torch.tensor(dataset[split_type]['vision'].astype(np.float32)).cpu().detach()[:length]
+        print(self.vision.shape)
+        self.text = torch.tensor(dataset[split_type]['text'].astype(np.float32)).cpu().detach()[:length]
+        self.audio = dataset[split_type]['audio'].astype(np.float32)[:length]
         self.audio[self.audio == -np.inf] = 0
         self.audio = torch.tensor(self.audio).cpu().detach()
-        self.labels = torch.tensor(dataset[split_type]['labels'].astype(np.float32)).cpu().detach()
+        self.labels = torch.tensor(dataset[split_type]['labels'].astype(np.float32)).cpu().detach()[:length]
         
         # Note: this is STILL an numpy array
         self.meta = dataset[split_type]['id'] if 'id' in dataset[split_type].keys() else None
-       
         self.data = data
-        
-        self.n_modalities = 3 # vision/ text/ audio
+        self.n_modalities = 3  # vision/ text/ audio
+
+        # IEMOCAP: emotion number
+        # print(self.labels[0])
+        self.x0 = 0
+        self.x1 = 0
+        self.x2 = 0
+        self.x3 = 0
+        # def get_pos(L):
+        #     return torch.argmax(L[:, -1])
+        # for label in self.labels:
+        #     pos = get_pos(label)
+        #     if pos == 0:
+        #         self.x0 += 1
+        #     elif pos == 1:
+        #         self.x1 += 1
+        #     elif pos == 2:
+        #         self.x2 += 1
+        #     elif pos == 3:
+        #         self.x3 += 1
+        # print(self.x0, self.x1, self.x2, self.x3)
+        # input()
+
     def get_n_modalities(self):
         return self.n_modalities
     def get_seq_len(self):
@@ -55,5 +82,18 @@ class Multimodal_Datasets(Dataset):
             META = (self.meta[index][0].decode('UTF-8'), self.meta[index][1].decode('UTF-8'), self.meta[index][2].decode('UTF-8'))
         if self.data == 'iemocap':
             Y = torch.argmax(Y, dim=-1)
+
+            pos = torch.argmax(Y)
+            # if pos == 0:
+            #     self.x0 += 1
+            # elif pos == 1:
+            #     self.x1 += 1
+            # elif pos == 2:
+            #     self.x2 += 1
+            # elif pos == 3:
+            #     self.x3 += 1
+            #
+            # print(self.x0, self.x1, self.x2, self.x3)
+
         return X, Y, META        
 
