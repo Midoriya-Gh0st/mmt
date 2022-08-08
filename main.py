@@ -49,7 +49,7 @@ parser.add_argument("--rnn_bi", type=int, default=1)
 parser.add_argument("--use_ln", type=str, default='no')
 parser.add_argument("--use_bn", type=str, default='no')
 parser.add_argument("--rdp", type=float, default=0.0)
-parser.add_argument("--bias", type=str, default='yes')
+parser.add_argument("--bias", type=str, default='no')
 
 # Tasks
 parser.add_argument('--vonly', action='store_true',
@@ -60,7 +60,7 @@ parser.add_argument('--lonly', action='store_true',
                     help='use the crossmodal fusion into l (default: False)')
 parser.add_argument('--aligned', action='store_true',
                     help='consider aligned experiment or not (default: False)')
-parser.add_argument('--dataset', type=str, default='iemocap',  # mosei_senti
+parser.add_argument('--dataset', type=str, default='mosi',  # mosei_senti
                     help='dataset to use (default: mosei_senti)')
 parser.add_argument('--data_path', type=str, default='data',
                     help='path for storing the dataset')
@@ -98,7 +98,7 @@ parser.add_argument('--lr', type=float, default=1e-3,
                     help='initial learning rate (default: 1e-3)')
 parser.add_argument('--optim', type=str, default='NAdam',  # 更换的 optimizer  Adam, AdamW, SGD, NAdam
                     help='optimizer to use (default: Adam)')
-parser.add_argument('--num_epochs', type=int, default=30,
+parser.add_argument('--num_epochs', type=int, default=40,
                     help='number of epochs (default: 40)')
 parser.add_argument('--when', type=int, default=20,
                     help='when to decay learning rate (default: 20)')
@@ -236,6 +236,7 @@ print("Kernel:", hyp_params.kernels)
 
 print("n_train:", hyp_params.n_train)
 print("n_test:", hyp_params.n_test)
+print("n_val:", hyp_params.n_valid)
 
 if __name__ == '__main__':
     # print(torch.cuda.memory_summary())
