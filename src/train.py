@@ -213,8 +213,8 @@ def train_model(settings, hyp_params, train_loader, valid_loader, test_loader):
             if i_batch % hyp_params.log_interval == 0 and i_batch > 0:
                 avg_loss = proc_loss / proc_size
                 elapsed_time = time.time() - start_time
-                print('Epoch {:2d} | Batch {:3d}/{:3d} | Time/Batch(ms) {:5.2f} | Train Loss {:5.4f}'.
-                      format(epoch, i_batch, num_batches, elapsed_time * 1000 / hyp_params.log_interval, avg_loss))
+                # print('Epoch {:2d} | Batch {:3d}/{:3d} | Time/Batch(ms) {:5.2f} | Train Loss {:5.4f}'.
+                #       format(epoch, i_batch, num_batches, elapsed_time * 1000 / hyp_params.log_interval, avg_loss))
                 proc_loss, proc_size = 0, 0
                 start_time = time.time()
 
@@ -288,11 +288,20 @@ def train_model(settings, hyp_params, train_loader, valid_loader, test_loader):
                 print("-" * 50)
                 print('Epoch {:2d} | Time {:5.4f} sec | Valid Loss {:5.4f} | Test Loss {:5.4f} | f1 {} | acc {}'.format(epoch, duration, val_loss, test_loss, f1, acc))
                 print("-" * 50)
+            elif hyp_params.dataset == 'mosi':
+                mae, corr, mult_a7, mult_a5, mult_a2, f1, acc = eval_mosi(results, truths, True)
+                print("-" * 50)
+                print('Epoch {:2d} | Time {:5.4f} sec | Valid Loss {:5.4f} | Test Loss {:5.4f} | f1 {} | acc {} | mae {} | corr {} | mult_a7 {} | mult_a5 {} | mult_a2 {}'.format(epoch, duration,
+                                                                                                                                                                                  val_loss, test_loss,
+                                                                                                                                                                                  f1, acc, mae, corr,
+                                                                                                                                                                                  mult_a7, mult_a5,
+                                                                                                                                                                                  mult_a2))
+                print("-" * 50)
 
             if val_loss < best_valid:
                 print(f"Saved model at pre_trained_models/{hyp_params.name}_{epoch}.pt!")
                 model_file = f"{hyp_params.name}_{epoch}"
-                save_model(hyp_params, model, name=model_file)
+                # save_model(hyp_params, model, name=model_file)
                 best_valid = val_loss
 
                 # TODO: check each model output - 每次都检查.
