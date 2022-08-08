@@ -13,6 +13,13 @@ def get_data(args, dataset, split='train'):
     else:
         print(f"  - Found cached {split} data")
         data = torch.load(data_path)
+    if args.dataset == 'iemocap':
+        data_path = 'E:\\'
+        data = Multimodal_Datasets(data_path, dataset, split, args.aligned)
+    else:
+        data = Multimodal_Datasets(args.data_path, dataset, split, args.aligned)
+
+
     return data
 
 
