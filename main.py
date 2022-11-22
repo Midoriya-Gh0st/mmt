@@ -35,6 +35,8 @@ parser.add_argument('-f', default='', type=str)
 # Train / Test
 parser.add_argument('--et', type=str, default='train',
                     help='train / test')
+parser.add_argument('--mm', type=int, default=0,
+                    help='primary modal. 0: Text; 1: Audio; 2: Visual.')
 
 # Fixed
 parser.add_argument('--model', type=str, default='MulT',
@@ -43,13 +45,6 @@ parser.add_argument('--model', type=str, default='MulT',
 # Kernel-size
 parser.add_argument('--kernel_size', type=str, default='1-1-1',
                     help='kernel size of [T, A, V]')
-
-# my-tune.
-parser.add_argument("--rnn_bi", type=int, default=1)
-parser.add_argument("--use_ln", type=str, default='no')
-parser.add_argument("--use_bn", type=str, default='no')
-parser.add_argument("--rdp", type=float, default=0.0)
-parser.add_argument("--bias", type=str, default='no')
 
 # Tasks
 parser.add_argument('--vonly', action='store_true',
@@ -60,7 +55,7 @@ parser.add_argument('--lonly', action='store_true',
                     help='use the crossmodal fusion into l (default: False)')
 parser.add_argument('--aligned', action='store_true',
                     help='consider aligned experiment or not (default: False)')
-parser.add_argument('--dataset', type=str, default='iemocap',  # mosei_senti
+parser.add_argument('--dataset', type=str, default='mosi',  # mosei_senti
                     help='dataset to use (default: mosei_senti)')
 parser.add_argument('--data_path', type=str, default='data',
                     help='path for storing the dataset')
@@ -94,11 +89,11 @@ parser.add_argument('--batch_size', type=int, default=16, metavar='N',  # 4
                     help='batch size (default: 24)')
 parser.add_argument('--clip', type=float, default=0.8,
                     help='gradient clip value (default: 0.8)')
-parser.add_argument('--lr', type=float, default=1e-3,
+parser.add_argument('--lr', type=float, default=1e-4,
                     help='initial learning rate (default: 1e-3)')
 parser.add_argument('--optim', type=str, default='NAdam',  # 更换的 optimizer  Adam, AdamW, SGD, NAdam
                     help='optimizer to use (default: Adam)')
-parser.add_argument('--num_epochs', type=int, default=30,
+parser.add_argument('--num_epochs', type=int, default=60,
                     help='number of epochs (default: 40)')
 parser.add_argument('--when', type=int, default=20,
                     help='when to decay learning rate (default: 20)')
@@ -173,6 +168,9 @@ train_data = get_data(args, dataset, 'train')
 valid_data = get_data(args, dataset, 'valid')
 test_data = get_data(args, dataset, 'test')
 print(type(train_data))
+print("len::train:", len(train_data))
+print("len::valid:", len(valid_data))
+print("len::test", len(test_data))
 
 DEF_DEVICE = 'cuda' if use_cuda else 'cpu'
 train_loader = DataLoader(train_data, batch_size=args.batch_size, shuffle=True, generator=torch.Generator(device=DEF_DEVICE))
@@ -225,13 +223,10 @@ hyp_params.n_train, hyp_params.n_valid, hyp_params.n_test = len(train_data), len
 hyp_params.model = str.upper(args.model.strip())
 hyp_params.output_dim = output_dim_dict.get(dataset, 1)
 hyp_params.criterion = criterion_dict.get(dataset, 'L1Loss')
+hyp_params.mm = args.mm
+# hyp_params.criterion = criterion_dict.get(dataset, 'SmoothL1Loss')  # TODO: SmoothL1Loss
 hyp_params.is_test = args.et
 hyp_params.kernels = [int(i) for i in args.kernel_size.split('-')]
-hyp_params.rnn_bi = args.rnn_bi
-hyp_params.use_ln = args.use_ln
-hyp_params.use_bn = args.use_bn
-hyp_params.rdp = args.rdp
-hyp_params.bias = args.bias
 print("Kernel:", hyp_params.kernels)
 
 print("n_train:", hyp_params.n_train)
@@ -257,12 +252,7 @@ if __name__ == '__main__':
         embed_dropout=hyp_params.embed_dropout,  #
 
         kernel_size=hyp_params.kernels,
-
-        use_ln=hyp_params.use_ln,
-        use_bn=hyp_params.use_bn,
-        rnn_bi=hyp_params.rnn_bi,
-        rdp=hyp_params.rdp,
-        bias=hyp_params.bias,
+        mm=hyp_params.mm,
     )
 
     # wandb.init(config=hypar_defaults)
@@ -277,4 +267,16 @@ if __name__ == '__main__':
     print("[bsz]:", args.batch_size)
 
     print("[time-start]:", datetime.datetime.now())
+
+    # detect the primary modal
+    # hyp_params.check_primary = True
+    # hyp_params.mm = -1
+    # mm = train.initiate(hyp_params, train_loader, valid_loader, test_loader)
+    # print("primary modal:", mm)
+    # torch.cuda.empty_cache()
+
+    # practical run
+    print("Practical Run")
+    hyp_params.check_primary = False
+    hyp_params.mm = 0
     test_loss = train.initiate(hyp_params, train_loader, valid_loader, test_loader)

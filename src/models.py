@@ -1,4 +1,3 @@
-import numpy as np
 import torch
 from torch import nn
 import torch.nn.functional as F
@@ -27,8 +26,12 @@ class MULTModel(nn.Module):
         self.out_dropout = hyp_params.out_dropout
         self.embed_dropout = hyp_params.embed_dropout
         self.attn_mask = hyp_params.attn_mask
-        self.kernels = hyp_params.kernels
-        self.bsz = hyp_params.batch_size
+        self.kernel = hyp_params.kernels
+
+        self.prob = nn.parameter.Parameter(torch.softmax(torch.ones(3), dim=-1), requires_grad=True)
+        self.mm = hyp_params.mm
+        self.check_primary = hyp_params.check_primary
+        print("mm:", hyp_params.mm)
 
         """ Modal weight """
         # emph layer weight
@@ -43,21 +46,6 @@ class MULTModel(nn.Module):
 
         # final concat layer weight
         self.w_last = P.Parameter(torch.ones(3), requires_grad=True)         # t_comb, v_comb, a_comb, 之间的weight;
-
-        self.use_ln = hyp_params.use_ln
-        self.use_bn = hyp_params.use_bn
-        self.rnn_bi = hyp_params.rnn_bi
-        # Layer Norm:
-        self.ln_l = nn.LayerNorm(self.d_l)
-        self.ln_a = nn.LayerNorm(self.d_a)
-        self.ln_v = nn.LayerNorm(self.d_v)
-        self.bn = nn.BatchNorm1d(num_features=self.d_l * 4)
-        self.bn_l = nn.BatchNorm1d(self.d_l)
-        self.bn_a = nn.BatchNorm1d(self.d_a)
-        self.bn_v = nn.BatchNorm1d(self.d_v)
-
-        self.prob = P.Parameter(torch.ones(3), requires_grad=True)
-        self.m_gate = torch.softmax(self.prob, dim=0)  # [L, A, V]
 
         # bias?
         # self.b_a_v = nn.parameter.Parameter(torch.zeros(1), requires_grad=True)
@@ -83,48 +71,33 @@ class MULTModel(nn.Module):
         output_dim = hyp_params.output_dim  # This is actually not a hyperparameter :-)
 
         # 1. Temporal convolutional layers
-        self.proj_l = nn.Conv1d(self.orig_d_l, self.d_l, kernel_size=self.kernels[0], padding=0, bias=False)
-        self.proj_a = nn.Conv1d(self.orig_d_a, self.d_a, kernel_size=self.kernels[0], padding=0, bias=False)
-        self.proj_v = nn.Conv1d(self.orig_d_v, self.d_v, kernel_size=self.kernels[0], padding=0, bias=False)
+        self.proj_l = nn.Conv1d(self.orig_d_l, self.d_l, kernel_size=self.kernel[0], padding=0, bias=False)
+        self.proj_a = nn.Conv1d(self.orig_d_a, self.d_a, kernel_size=self.kernel[1], padding=0, bias=False)
+        self.proj_v = nn.Conv1d(self.orig_d_v, self.d_v, kernel_size=self.kernel[2], padding=0, bias=False)
 
         """ ---------------------------- """
         """ GRU """
         num_layers = 3  # TODO: GRU layers?
         # BF = False  # is_batch_first?
-        BD = True  # is_bidirectional? # 设置成True, 后面会有 40*2=80, 还是应该取后面[:40]?
+        BD = False  # is_bidirectional? # 设置成True, 后面会有 40*2=80, 还是应该取后面[:40]?
         # seq_len 不包含在内
+        in_size = 40
         out_size = 40
-        if self.rnn_bi == 1:  # uni-rnn
-            # out_size = 40
-            BD = False
-
-        if hyp_params.bias == 'yes':
-            self.bias = True
-        elif hyp_params.bias == 'no':
-            self.bias = False
-        BIAS = self.bias  # is_bias_open?
-
-        # TODO: 如果不用前置CNN, 则这里为self.d_l, 否则为 self.orig_d_l;
-        self.gru_l = nn.GRU(self.d_l, out_size, num_layers, dropout=hyp_params.rdp, bidirectional=BD, bias=BIAS, batch_first=True)  # 需求: [input_size, h_size, num_layers]
-        self.gru_a = nn.GRU(self.d_a, out_size, num_layers, dropout=hyp_params.rdp, bidirectional=BD, bias=BIAS, batch_first=True)  #
-        self.gru_v = nn.GRU(self.d_v, out_size, num_layers, dropout=hyp_params.rdp, bidirectional=BD, bias=BIAS, batch_first=True)  # default-setting
+        BIAS = False  # is_bias_open?
+        self.gru_l = nn.GRU(in_size, out_size, num_layers, bidirectional=BD, bias=BIAS)  # 需求: [input_size, h_size, num_layers]
+        self.gru_a = nn.GRU(in_size, out_size, num_layers, bidirectional=BD, bias=BIAS)  #
+        self.gru_v = nn.GRU(in_size, out_size, num_layers, dropout=0, bidirectional=BD, bias=BIAS)  # default-setting
 
         # 2. Crossmodal Attentions
 
         self.trans_t_with_a = self.get_network(self_type='la')
         self.trans_t_with_v = self.get_network(self_type='lv')
-
-        self.trans_a_with_t = self.get_network(self_type='al')
         self.trans_a_with_v = self.get_network(self_type='av')
-
-        self.trans_v_with_t = self.get_network(self_type='vl')
         self.trans_v_with_a = self.get_network(self_type='va')
 
         # 3. Self Attentions (Could be replaced by LSTMs, GRUs, etc.)
         #    [e.g., self.trans_x_mem = nn.LSTM(self.d_x, self.d_x, 1)
         self.trans_t_mem = self.get_network(self_type='l_mem', layers=3)
-        self.trans_a_mem = self.get_network(self_type='a_mem', layers=3)
-        self.trans_v_mem = self.get_network(self_type='v_mem', layers=3)
 
         # Projection layers
         self.proj1 = nn.Linear(combined_dim, combined_dim)
@@ -156,85 +129,78 @@ class MULTModel(nn.Module):
                                   embed_dropout=self.embed_dropout,
                                   attn_mask=self.attn_mask)
 
-    def forward(self, x_l, x_a, x_v):  # ([16, 50, 300])
+    def forward(self, x_l, x_a, x_v):
         """
         text, audio, and vision should have dimension [batch_size, seq_len, n_features]
         """
+
+        # print(x_l)
+
         # input(f'[stat-1]: {x_l.shape, x_a.shape, x_v.shape}')  # [bsz, 300/5/20]
-        x_l = F.dropout(x_l, p=self.embed_dropout, training=self.training)
-        x_a = x_a
-        x_v = x_v
-        # input(x_l.shape)  # ([16, 50, 300])
-        len_l = x_l.shape[1]
-        len_a = x_a.shape[1]
-        len_v = x_v.shape[1]
+        x_l = F.dropout(x_l.transpose(1, 2), p=self.embed_dropout, training=self.training)
+        x_a = x_a.transpose(1, 2)
+        x_v = x_v.transpose(1, 2)
 
         # Project the textual/visual/audio features
-        # for conv1d, the input: [N, C_in, L], output: [N, C_out, L]
-        # input(x_l.shape)  # [16, 50, 300]
-        proj_x_l = self.proj_l(x_l.transpose(1, 2))
-        proj_x_a = self.proj_a(x_a.transpose(1, 2))
-        proj_x_v = self.proj_v(x_v.transpose(1, 2))
+        proj_x_l = x_l if self.orig_d_l == self.d_l else self.proj_l(x_l)
+        proj_x_a = x_a if self.orig_d_a == self.d_a else self.proj_a(x_a)
+        proj_x_v = x_v if self.orig_d_v == self.d_v else self.proj_v(x_v)
+        # print(f"[-1-]: {proj_x_l.shape, proj_x_a.shape, proj_x_v.shape}")  # [bsz, 40, tgt_len]
 
-        # TODO: 尝试在GRU之前使用[BN+激活函数];
-        if self.use_bn == 'yes':
-            proj_x_l = self.bn_l(proj_x_l).transpose(1, 2)
-            proj_x_a = self.bn_a(proj_x_a).transpose(1, 2)
-            proj_x_v = self.bn_v(proj_x_v).transpose(1, 2)
-        proj_x_l = torch.tanh(proj_x_l)
-        proj_x_a = torch.tanh(proj_x_a)
-        proj_x_v = torch.tanh(proj_x_v)
+        proj_x_a = proj_x_a.permute(2, 0, 1)
+        proj_x_v = proj_x_v.permute(2, 0, 1)
+        proj_x_l = proj_x_l.permute(2, 0, 1)
+        # input(f"[-2-]: {proj_x_l.shape, proj_x_a.shape, proj_x_v.shape}")
 
-        # # GRU
-        proj_x_l, _ = self.gru_l(proj_x_l)
-        proj_x_a, _ = self.gru_a(proj_x_a)
-        proj_x_v, _ = self.gru_v(proj_x_v)
+        """ -------------------------- """
+        # 添加GRU, 再次训练;
+        # in_size == hidden_size?
+        proj_x_l, f_l = self.gru_l(proj_x_l)
+        proj_x_a, f_a = self.gru_a(proj_x_a)
+        proj_x_v, f_v = self.gru_v(proj_x_v)
+        # input(f"[ck-hidden]: {f_l.shape, f_a.shape, f_v.shape}")  # ([2, 2, 40]): [layers, bsz, hidden], 后面可能用到吗?
+        # input(f"[-3-]: {proj_x_l.shape, proj_x_a.shape, proj_x_v.shape}")
+        # (torch.Size([50, 2, 40]), torch.Size([375, 2, 40]), torch.Size([500, 2, 40]))  # [seq_len, bsz, D*hidden]  # [50, 2, 40] # if bi-d, 80
+        # ----
 
-        # print(f"[-1-]: {proj_x_l.shape, proj_x_a.shape, proj_x_v.shape}")  # [16, 50, 40*2]  # batch-first in bi-GRU.
-        if self.rnn_bi == 2:
-            # print(proj_x_l.shape)
-            proj_x_l = proj_x_l.view(-1, len_l, 2, self.d_l)
-            proj_x_a = proj_x_a.view(-1, len_a, 2, self.d_l)
-            proj_x_v = proj_x_v.view(-1, len_v, 2, self.d_l)
-            # output.view(seq_len, batch, num_directions, hidden_size) when bs_first = True
-            proj_x_l = (proj_x_l[:, :, 0, :] + proj_x_l[:, :, 1, :]).squeeze()
-            proj_x_a = (proj_x_a[:, :, 0, :] + proj_x_a[:, :, 1, :]).squeeze()
-            proj_x_v = (proj_x_v[:, :, 0, :] + proj_x_v[:, :, 1, :]).squeeze()
-            # print("1:")
-            # input(proj_x_l.shape)  # [16, 50, 40]
-
-        # now: [16, 50, 40]
-        # LN
-        if self.use_ln == 'yes':
-            proj_x_l = self.ln_l(proj_x_l)
-            proj_x_a = self.ln_a(proj_x_a)
-            proj_x_v = self.ln_v(proj_x_v)
-        # print("2:")
-        # input(proj_x_a.shape)
-
-        proj_x_a = proj_x_a.permute(1, 0, 2)
-        proj_x_v = proj_x_v.permute(1, 0, 2)
-        proj_x_l = proj_x_l.permute(1, 0, 2)
-        # input(f"[-2-]: {proj_x_l.shape, proj_x_a.shape, proj_x_v.shape}")  # [40, 16, 50])
+        """ modals shape """
+        # input(f"[feature-dim-shape]: {proj_x_l.shape, proj_x_a.shape, proj_x_v.shape}")
+        # (torch.Size([50, 2, 40]), torch.Size([375, 2, 40]), torch.Size([500, 2, 40]))
 
         """ Multi-Gate """
-        # self.m_gate = torch.softmax(self.prob, dim=0)  # [L, A, V]
-        domain_modal = torch.argmax(self.m_gate)
-        if domain_modal == 0:  # L
+        if self.check_primary:
+            prob = torch.softmax(self.prob, -1)
+            domain_modal = torch.argmax(prob)
+
+            if self.mm != domain_modal:
+                self.mm = domain_modal  # 重新设置mm
+            # print(self.tuned, "|", prob, "|", domain_modal, "|")
+
+            proj_x_l = proj_x_l * prob[0]
+            proj_x_a = proj_x_a * prob[1]
+            proj_x_v = proj_x_v * prob[2]
+
+            # print("find .. weight")
+        else:
+            # print("check?:", self.check_primary)
             ...
-        elif domain_modal == 1:
+        if self.mm == 0:  # L     # 调整mm.
+            ...
+        elif self.mm == 1:
             temp = proj_x_l
             proj_x_l = proj_x_a
             proj_x_a = temp
-        else:
+        elif self.mm == 2:
             temp = proj_x_l
             proj_x_l = proj_x_v
             proj_x_v = temp
 
+        # input(proj_x_l.shape)
+
         if self.lonly:
             """ Text & [Audio + Visual] """
             # audio:
-            h_a_with_v = self.trans_a_with_v(proj_x_a, proj_x_v, proj_x_v)  # I/O: torch.Size([375, 2, 40])
+            h_a_with_v = self.trans_a_with_v(proj_x_a, proj_x_v, proj_x_v)  # torch.Size([375, 2, 40])
             last_h_a_for_t = h_a_with_v[-1]  # 取最后一层进行cat;
 
             # visual:
@@ -257,32 +223,10 @@ class MULTModel(nn.Module):
 
         # A residual block
         x1 = self.proj1(last_h)
-        # if self.use_bn == 'yes':
-        #     x1 = self.bn(x1)
-
         last_hs_proj = self.proj2(F.dropout(F.relu(x1), p=self.out_dropout, training=self.training))
         last_hs_proj += last_h
 
         output = self.out_layer(last_hs_proj)
-        return output, last_h
-
-        # TODO: prompt?
-        """ 加上后, 性能有一点下降 """
-        # 加上 RNN 的最后
-        # last_h_a += f_a[-1]
-        # last_h_v += f_v[-1]
-
-        # 合并 [A + V], 通过projection, 弥合模态间features_dim的不同;
-
-        """ descp: """
-        # 拼接hidden_feature, 还是融合raw_feature?
-        # 要有相同的seq_len;
-
-        # TODO: 考虑 co-attn, 将[A/V]叠加, 然后进行 self-attn;
-
-
-
-
-
-
-
+        # print("sos", output)
+        # input()
+        return output, last_h, self.mm
